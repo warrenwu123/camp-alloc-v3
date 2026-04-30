@@ -1,0 +1,83 @@
+# .github/workflows/production.yml
+# Deploys to production GitHub Pages on every push to main
+
+name: 🚀 Production Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:   # allow manual trigger from Actions tab
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  deploy-production:
+    name: Build & Deploy Production
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://kmgcamp.github.io/camp-alloc-v2/
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build production site
+        env:
+          WORKER_URL: ${{ secrets.PRODUCTION_WORKER_URL || 'https://campbook2.alvinkc.workers.dev' }}
+          REPO_NAME:  camp-alloc-v2
+        run: |
+          mkdir -p dist
+
+          sed \
+            -e "s|WORKER_URL:  '[^']*'|WORKER_URL:  '${WORKER_URL}'|g" \
+            index.html > dist/index.html
+
+          if [ -f test.html ]; then
+            sed \
+              -e "s|https://campbook2.alvinkc.workers.dev|${WORKER_URL}|g" \
+              test.html > dist/test.html
+          fi
+
+          # Copy any other static files if present
+          for f in favicon.ico robots.txt; do
+            [ -f "$f" ] && cp "$f" dist/
+          done
+
+          echo "Production build complete"
+          ls -lh dist/
+
+      - name: Deploy to GitHub Pages (production)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Check out or create gh-pages branch
+          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
+            git checkout -B gh-pages origin/gh-pages
+          else
+            git checkout --orphan gh-pages
+            git rm -rf . --quiet || true
+          fi
+
+          # Copy production build (preserve any pr-* preview folders)
+          cp dist/index.html ./index.html
+          [ -f dist/test.html ] && cp dist/test.html ./test.html
+
+          git add index.html test.html 2>/dev/null || git add index.html
+          git commit -m "deploy: production @ $(git rev-parse --short HEAD 2>/dev/null || echo 'latest')" \
+            --allow-empty
+          git push origin gh-pages
+
+      - name: Summary
+        run: |
+          echo "### ✅ Production Deployed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🌐 **URL:** https://kmgcamp.github.io/camp-alloc-v2/" >> $GITHUB_STEP_SUMMARY
+          echo "⚗ **Tests:** https://kmgcamp.github.io/camp-alloc-v2/test.html" >> $GITHUB_STEP_SUMMARY
+          echo "📦 **Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
