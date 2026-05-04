@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<!-- CampAlloc v2.3 excel-import build -->
+<html lang="en">
+<head><base href="/camp-alloc-v2/previews/auth-refactor/">
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Camp Allocation — Wyndham Airport Camp</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f5f5f5; --surface:#ffffff; --surface2:#f0f0f0; --border:#d0d0d8;
+    --accent:#f0a500; --green:#2ea043; --green-dim:#e6f4ea;
+    --red:#cf3030; --red-dim:#fdecea; --blue:#1a6fb5; --blue-dim:#e8f0fe;
+    --yellow:#d4a017; --yellow-dim:#fef9e7;
+    --text:#1a1a2e; --text-dim:#555566; --text-muted:#999aaa;
+    --font-head:'Barlow Condensed',sans-serif; --font-body:'Barlow',sans-serif; --radius:6px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;min-height:100vh;}
+
+  /* ══ LOGIN ══ */
+  .login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:28px;background:radial-gradient(ellipse at 50% 0%,rgba(240,165,0,.08) 0%,transparent 65%),var(--bg);}
+  .login-logo{font-family:var(--font-head);font-size:48px;font-weight:900;letter-spacing:5px;color:var(--accent);text-transform:uppercase;}
+  .login-logo span{color:var(--text-dim);font-weight:400;}
+  .login-site{color:var(--text-dim);font-size:14px;letter-spacing:2px;font-family:var(--font-head);text-transform:uppercase;}
+  .login-card{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:var(--radius);padding:40px 48px;width:380px;max-width:92vw;box-shadow:0 24px 64px rgba(0,0,0,.6);}
+  .login-card h2{font-family:var(--font-head);font-size:22px;font-weight:700;letter-spacing:1px;margin-bottom:6px;}
+  .login-card p{color:var(--text-dim);font-size:13px;margin-bottom:28px;line-height:1.5;}
+  .login-field{display:flex;flex-direction:column;gap:6px;margin-bottom:20px;}
+  .login-label{font-family:var(--font-head);font-size:12px;font-weight:700;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase;}
+  .login-input{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:var(--radius);padding:11px 14px;font-size:15px;font-family:var(--font-body);width:100%;transition:border-color .15s;letter-spacing:2px;}
+  .login-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(240,165,0,.15);}
+  .login-btn{width:100%;background:var(--accent);color:#000;border:none;border-radius:var(--radius);padding:13px;font-family:var(--font-head);font-size:16px;font-weight:900;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .15s;}
+  .login-btn:hover{background:#ffc233;transform:translateY(-1px);box-shadow:0 4px 16px rgba(240,165,0,.3);}
+  .login-error{color:#f85149;font-size:12px;margin-top:12px;text-align:center;min-height:18px;font-family:var(--font-head);letter-spacing:.5px;}
+  .login-shake{animation:shake .35s ease;}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+
+  /* ══ LOADING ══ */
+  .loading-overlay{position:fixed;inset:0;background:rgba(13,17,23,.88);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:999;backdrop-filter:blur(4px);}
+  .loading-overlay.show{display:flex;}
+  .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-msg{font-family:var(--font-head);font-size:14px;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase;}
+
+  /* ══ NAV ══ */
+  .nav{background:var(--surface);border-bottom:2px solid var(--accent);display:flex;align-items:center;padding:0 24px;height:56px;position:sticky;top:0;z-index:100;}
+  .nav-brand{font-family:var(--font-head);font-size:22px;font-weight:900;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-right:28px;display:flex;align-items:center;white-space:nowrap;}
+  .nav-brand span{color:var(--text-dim);font-weight:400;}
+  .nav-tabs{display:flex;gap:4px;}
+  .nav-tab{background:none;border:none;color:var(--text-dim);padding:6px 14px;font-family:var(--font-head);font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:all .15s;border-radius:var(--radius);}
+  .nav-tab:hover{background:var(--surface2);color:var(--text);}
+  .nav-tab.active{background:var(--accent);color:#000;}
+  .nav-spacer{flex:1;}
+  .nav-right{display:flex;align-items:center;gap:16px;}
+  .nav-info{font-family:var(--font-head);font-size:12px;color:var(--text-muted);letter-spacing:.5px;}
+  .btn-signout{background:none;border:1px solid var(--border);color:var(--text-dim);padding:6px 12px;border-radius:var(--radius);font-family:var(--font-head);font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .15s;text-transform:uppercase;}
+  .btn-signout:hover{background:var(--red-dim);border-color:var(--red);color:var(--red);}
+
+  /* ══ PAGES ══ */
+  .page{display:none;}
+  .page.active{display:block;}
+  .overview-header{padding:16px 24px 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  .overview-title{font-family:var(--font-head);font-size:28px;font-weight:900;letter-spacing:2px;text-transform:uppercase;}
+  .overview-stats{display:flex;gap:8px;flex-wrap:wrap;}
+  .stat-pill{font-family:var(--font-head);font-size:13px;font-weight:700;letter-spacing:.5px;padding:6px 14px;border-radius:20px;border:1px solid var(--border);}
+  .stat-pill.occupied{background:var(--blue-dim);color:var(--blue);border-color:var(--blue);}
+  .stat-pill.vacant{background:var(--green-dim);color:var(--green);border-color:var(--green);}
+  .stat-pill.repair{background:var(--red-dim);color:var(--red);border-color:var(--red);}
+  .stat-pill.dirty{background:var(--yellow-dim);color:var(--yellow);border-color:var(--yellow);}
+
+  /* ══ CONTROLS BAR ══ */
+  .controls-bar{padding:12px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--surface);border-bottom:1px solid var(--border);margin-top:12px;}
+  .ctrl-label{font-family:var(--font-head);font-size:12px;font-weight:700;letter-spacing:1px;color:var(--text-muted);text-transform:uppercase;}
+  .month-nav{display:flex;align-items:center;gap:6px;}
+  .month-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:var(--radius);cursor:pointer;font-size:16px;line-height:1;transition:background .15s;}
+  .month-btn:hover{background:var(--border);}
+  .month-display{font-family:var(--font-head);font-size:15px;font-weight:700;letter-spacing:1px;min-width:140px;text-align:center;}
+  .view-toggle{display:flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+  .view-btn{background:none;border:none;color:var(--text-dim);padding:6px 14px;font-family:var(--font-head);font-size:13px;font-weight:600;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:all .15s;}
+  .view-btn.active{background:var(--accent);color:#000;}
+  .legend{display:flex;gap:12px;margin-left:auto;align-items:center;flex-wrap:wrap;}
+  .legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-dim);}
+  .legend-dot{width:10px;height:10px;border-radius:2px;}
+
+  /* ══ DAILY BUTTONS ══ */
+  .daily-btns{display:flex;gap:8px;margin-left:12px;}
+  .daily-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);padding:6px 14px;border-radius:var(--radius);font-family:var(--font-head);font-size:12px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:all .15s;text-transform:uppercase;}
+  .daily-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .daily-btn.checkin-btn:hover{background:var(--green-dim);border-color:var(--green);color:var(--green);}
+  .daily-btn.checkout-btn:hover{background:var(--red-dim);border-color:var(--red);color:var(--red);}
+
+  /* ══ CALENDAR ══ */
+  .calendar-wrap{overflow-x:auto;padding:0 24px 24px;}
+  .calendar-grid{display:grid;min-width:900px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-top:16px;box-shadow:0 2px 12px rgba(0,0,0,.08);}
+  .cal-head-row{display:grid;background:var(--surface2);border-bottom:1px solid var(--border);}
+  .cal-room-label{padding:10px 14px;font-family:var(--font-head);font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);border-right:1px solid var(--border);min-width:120px;width:120px;}
+  .cal-day-header{font-family:var(--font-head);font-size:11px;font-weight:600;text-align:center;padding:6px 2px;color:var(--text-muted);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:2px;}
+  .cal-day-header.today-col{color:var(--accent);background:rgba(240,165,0,.07);}
+  .cal-day-num{font-size:13px;font-weight:700;}.cal-day-name{font-size:9px;}
+  .cal-room-row{display:grid;border-bottom:1px solid var(--border);}
+  .cal-room-row:last-child{border-bottom:none;}
+  .cal-room-info{padding:6px 10px;border-right:2px solid var(--border);min-width:120px;width:120px;display:flex;flex-direction:column;gap:2px;cursor:pointer;transition:background .15s;}
+  .cal-room-info:hover{background:rgba(255,255,255,.03);}
+  .cal-room-num{font-family:var(--font-head);font-size:15px;font-weight:900;color:var(--accent);letter-spacing:1px;}
+  .cal-room-status-badges{display:flex;gap:3px;flex-wrap:wrap;}
+  .badge{font-size:9px;font-family:var(--font-head);font-weight:700;letter-spacing:.5px;padding:1px 5px;border-radius:3px;text-transform:uppercase;}
+  .badge.clean{background:var(--green-dim);color:#3fb950;}.badge.dirty{background:var(--yellow-dim);color:#d29922;}.badge.repair{background:var(--red-dim);color:#f85149;}
+  .cal-day-cell{border-right:1px solid var(--border);height:46px;position:relative;cursor:pointer;transition:background .1s;}
+  .cal-day-cell:hover{background:rgba(255,255,255,.03);}
+  .cal-day-cell.today-col{background:rgba(240,165,0,.04);}
+  .cal-day-cell.weekend{background:rgba(255,255,255,.01);}
+  .cal-day-cell.drag-over{background:rgba(240,165,0,.15)!important;outline:2px dashed var(--accent);outline-offset:-2px;}
+
+  .booking-bar{position:absolute;top:6px;height:34px;border-radius:4px;display:flex;align-items:center;padding:0 6px;font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:grab;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.4);transition:transform .1s,box-shadow .1s;user-select:none;left:1px;right:1px;}
+  .booking-bar:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.5);}
+  .booking-bar.dragging{opacity:.6;cursor:grabbing;}
+  .booking-bar.color-0{background:linear-gradient(135deg,#1a4a8a,#1d6fa5);color:#a8d4f5;border-left:3px solid #58a6ff;}
+  .booking-bar.color-1{background:linear-gradient(135deg,#2a5a1a,#3a7a2a);color:#a8e6a8;border-left:3px solid #3fb950;}
+  .booking-bar.color-2{background:linear-gradient(135deg,#6a2a1a,#8a3a20);color:#f5c0a8;border-left:3px solid #f0a500;}
+  .booking-bar.color-3{background:linear-gradient(135deg,#4a1a6a,#6a2a8a);color:#d4b0f5;border-left:3px solid #a855f7;}
+  .booking-bar.color-4{background:linear-gradient(135deg,#1a5a5a,#1a7a7a);color:#a0e0e0;border-left:3px solid #22d3ee;}
+  .booking-bar.color-5{background:linear-gradient(135deg,#5a4a1a,#7a6a1a);color:#f0d890;border-left:3px solid #fbbf24;}
+  .booking-bar.off-week{opacity:.35;background:repeating-linear-gradient(45deg,rgba(255,255,255,.04) 0px,rgba(255,255,255,.04) 4px,transparent 4px,transparent 8px)!important;border-left-color:var(--text-muted)!important;color:var(--text-muted)!important;cursor:default;}
+  .bar-start{border-radius:4px 0 0 4px;left:2px;}.bar-end{border-radius:0 4px 4px 0;right:2px;}.bar-mid{border-radius:0;left:0;right:0;}.bar-solo{left:2px;right:2px;}
+
+  /* ── Split cell: checkout top half + checkin bottom half ── */
+  .booking-bar.bar-top{top:2px;height:20px;border-radius:4px 0 0 4px;left:2px;right:1px;font-size:10px;padding:0 4px;box-shadow:0 1px 4px rgba(0,0,0,.4);}
+  .booking-bar.bar-top.bar-solo-top{border-radius:4px;left:2px;right:2px;}
+  .booking-bar.bar-bot{top:24px;height:20px;border-radius:0 4px 4px 0;left:1px;right:2px;font-size:10px;padding:0 4px;box-shadow:0 1px 4px rgba(0,0,0,.4);}
+  .booking-bar.bar-bot.bar-solo-bot{border-radius:4px;left:2px;right:2px;}
+  .split-divider{position:absolute;top:22px;left:2px;right:2px;height:1px;background:var(--border);z-index:3;pointer-events:none;}
+
+  /* ══ POPUP ══ */
+  .popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;backdrop-filter:blur(4px);}
+  .popup-overlay.open{display:flex;align-items:center;justify-content:center;}
+  .popup{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:var(--radius);width:500px;max-width:95vw;max-height:90vh;overflow-y:auto;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.7);animation:popIn .2s ease;}
+  .popup.wide{width:700px;}
+  @keyframes popIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:none}}
+  .popup-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;}
+  .popup-title{font-family:var(--font-head);font-size:24px;font-weight:900;letter-spacing:1px;}
+  .popup-close{background:none;border:none;color:var(--text-dim);font-size:22px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:4px;transition:background .15s;}
+  .popup-close:hover{background:var(--border);color:var(--text);}
+  .popup-section{margin-bottom:14px;}
+  .popup-label{font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;}
+  .popup-value{font-size:14px;color:var(--text);}
+  .popup-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .popup-actions{display:flex;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);flex-wrap:wrap;}
+  .btn{font-family:var(--font-head);font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 16px;border-radius:var(--radius);border:none;cursor:pointer;transition:all .15s;}
+  .btn-primary{background:var(--accent);color:#000;}.btn-primary:hover{background:#ffc233;}
+  .btn-danger{background:var(--red-dim);color:#f85149;border:1px solid var(--red);}.btn-danger:hover{background:var(--red);color:#fff;}
+  .btn-ghost{background:none;color:var(--text-dim);border:1px solid var(--border);}.btn-ghost:hover{background:var(--border);color:var(--text);}
+  .btn-green{background:var(--green-dim);color:var(--green);border:1px solid var(--green);}.btn-green:hover{background:var(--green);color:#fff;}
+  .popup-input{background:#fff;border:1px solid var(--border);color:var(--text);border-radius:var(--radius);padding:8px 10px;font-family:var(--font-body);font-size:14px;width:100%;transition:border-color .15s;}
+  .popup-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(240,165,0,.15);}
+
+  /* ══ DAILY LIST (check-in/out popup) ══ */
+  .daily-list{width:100%;}
+  .daily-list-header{display:grid;grid-template-columns:80px 1fr 1fr 100px;gap:8px;padding:8px 12px;background:var(--surface2);border-radius:var(--radius);font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;}
+  .daily-list-row{display:grid;grid-template-columns:80px 1fr 1fr 100px;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;align-items:center;transition:background .15s;}
+  .daily-list-row:hover{background:var(--surface2);}
+  .daily-list-room{font-family:var(--font-head);font-size:15px;font-weight:900;color:var(--accent);}
+  .daily-list-name{font-weight:600;}
+  .daily-list-company{color:var(--text-dim);font-size:13px;}
+  .daily-list-dates{font-family:var(--font-head);font-size:11px;color:var(--text-muted);}
+  .daily-empty{text-align:center;padding:32px;color:var(--text-muted);font-family:var(--font-head);font-size:14px;letter-spacing:1px;text-transform:uppercase;}
+
+  /* ══ BOOKING FORM PAGE ══ */
+  .booking-page{padding:24px;max-width:800px;margin:0 auto;}
+  .booking-page-title{font-family:var(--font-head);font-size:32px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+  .booking-page-sub{color:var(--text-dim);margin-bottom:32px;}
+  .form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+  .form-card-title{font-family:var(--font-head);font-size:16px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .form-group{display:flex;flex-direction:column;gap:6px;}.form-group.full{grid-column:1/-1;}
+  label{font-family:var(--font-head);font-size:12px;font-weight:700;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase;}
+  input,select,textarea{background:#fff;border:1px solid var(--border);color:var(--text);border-radius:var(--radius);padding:10px 12px;font-family:var(--font-body);font-size:14px;transition:border-color .15s;width:100%;}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(240,165,0,.15);}
+  textarea{resize:vertical;min-height:80px;}select option{background:var(--surface);}
+  .room-picker{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;}
+  .room-option{border:1px solid var(--border);border-radius:var(--radius);padding:8px 4px;text-align:center;cursor:pointer;transition:all .15s;background:var(--bg);font-family:var(--font-head);font-weight:700;font-size:13px;}
+  .room-option:hover{border-color:var(--accent);color:var(--accent);}
+  .room-option.selected{background:var(--accent);color:#000;border-color:var(--accent);}
+  .room-option.occupied{background:var(--blue-dim);color:#58a6ff;border-color:var(--blue);cursor:not-allowed;}
+  .room-option.repair{background:var(--red-dim);color:#f85149;border-color:var(--red);cursor:not-allowed;}
+  .room-option .room-tag{font-size:8px;display:block;font-weight:400;margin-top:1px;}
+  .condition-row{display:flex;gap:12px;}
+  .toggle-btn{flex:1;padding:10px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);color:var(--text-dim);cursor:pointer;font-family:var(--font-head);font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;transition:all .15s;text-align:center;}
+  .toggle-btn.active-green{background:var(--green-dim);color:#3fb950;border-color:var(--green);}
+  .toggle-btn.active-red{background:var(--red-dim);color:#f85149;border-color:var(--red);}
+  .toggle-btn.active-yellow{background:var(--yellow-dim);color:#d29922;border-color:var(--yellow);}
+  .roster-info{grid-column:1/-1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;font-size:12px;color:var(--text-dim);line-height:1.6;display:none;}
+  .roster-info.show{display:block;}.roster-info strong{color:var(--accent);font-family:var(--font-head);}
+  .submit-bar{display:flex;gap:12px;justify-content:flex-end;padding-top:8px;}
+  .btn-large{font-family:var(--font-head);font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:12px 28px;border-radius:var(--radius);border:none;cursor:pointer;transition:all .15s;}
+  .btn-submit{background:var(--accent);color:#000;}.btn-submit:hover{background:#ffc233;transform:translateY(-1px);box-shadow:0 4px 16px rgba(240,165,0,.3);}
+  .btn-reset{background:none;color:var(--text-dim);border:1px solid var(--border);}.btn-reset:hover{background:var(--border);color:var(--text);}
+  .bookings-list{margin-top:32px;}
+  .bookings-list-title{font-family:var(--font-head);font-size:20px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+  .bookings-table{width:100%;border-collapse:collapse;}
+  .bookings-table th{font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text-muted);text-transform:uppercase;text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+  .bookings-table td{padding:10px 12px;border-bottom:1px solid rgba(42,52,68,.5);vertical-align:middle;}
+  .bookings-table tr:hover td{background:rgba(255,255,255,.02);}
+  .room-chip{background:var(--surface2);border:1px solid var(--border);color:var(--accent);font-family:var(--font-head);font-weight:700;padding:3px 8px;border-radius:4px;font-size:13px;}
+
+  /* ══ REPORTS PAGE ══ */
+  .reports-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center;}
+
+  /* ══ TOAST ══ */
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#fff;padding:12px 20px;border-radius:var(--radius);font-family:var(--font-head);font-size:14px;font-weight:700;letter-spacing:.5px;z-index:500;animation:slideUp .3s ease;display:none;}
+  .toast.error{background:var(--red);}.toast.show{display:block;}
+  @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+  .empty-state{text-align:center;padding:40px;color:var(--text-muted);font-family:var(--font-head);font-size:14px;letter-spacing:1px;text-transform:uppercase;}
+  .empty-state .icon{font-size:32px;margin-bottom:10px;}
+  ::-webkit-scrollbar{width:6px;height:6px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:#bbbbc8;border-radius:3px;}
+  @media(max-width:600px){.form-grid{grid-template-columns:1fr}.overview-stats{display:none}.room-picker{grid-template-columns:repeat(5,1fr)}}
+
+  .save-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:4px;animation:pulse 2s infinite;}
+  .save-dot.saving{background:var(--yellow);animation:spin .6s linear infinite;}
+  .save-dot.error{background:var(--red);animation:none;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="loginScreen" class="login-screen" style="display:none">
+  <div class="login-logo">Camp<span>Alloc</span></div>
+  <div class="login-site">Wyndham Airport Camp — Room Management</div>
+  <div class="login-card">
+    <h2>🔒 Enter Password</h2>
+    <p>This system is for authorised camp staff only.</p>
+    <div class="login-field">
+      <div class="login-label">Password</div>
+      <input class="login-input" type="password" id="loginPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter')App.Auth.doLogin()">
+    </div>
+    <button class="login-btn" onclick="App.Auth.doLogin()">Enter</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ══ LOADING ══ -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-msg" id="loadingMsg">Loading...</div>
+</div>
+
+<!-- ══ MAIN APP ══ -->
+<div id="mainApp" style="display:none">
+  <nav class="nav">
+    <div class="nav-brand">Camp<span>Alloc</span></div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="App.UI.Nav.showPage('overview')">📊 Overview</button>
+      <button class="nav-tab" onclick="App.UI.Nav.showPage('booking')">➕ New Booking</button>
+      <button class="nav-tab" onclick="App.UI.Nav.showPage('reports')">📈 Reports</button>
+    </div>
+    <div class="nav-spacer"></div>
+    <div class="nav-right">
+      <span id="saveIndicator" style="font-family:var(--font-head);font-size:11px;color:var(--text-muted);letter-spacing:1px;display:flex;align-items:center">
+        <span class="save-dot" id="saveDot"></span><span id="saveText">Synced</span>
+      </span>
+      <div class="nav-info" id="navTime"></div>
+      <button class="btn-signout" onclick="App.Auth.doLogout()">🔒 Lock</button>
+    </div>
+  </nav>
+
+  <!-- OVERVIEW -->
+  <div class="page active" id="page-overview">
+    <div class="overview-header">
+      <div class="overview-title">Room Allocation</div>
+      <div class="overview-stats">
+        <div class="stat-pill occupied">🛏 <span id="stat-occupied">0</span> Occupied</div>
+        <div class="stat-pill vacant">✅ <span id="stat-vacant">80</span> Vacant</div>
+        <div class="stat-pill repair">🔧 <span id="stat-repair">0</span> Repair</div>
+        <div class="stat-pill dirty">🧹 <span id="stat-dirty">0</span> Unclean</div>
+      </div>
+    </div>
+    <div class="controls-bar">
+      <span class="ctrl-label">Period:</span>
+      <div class="month-nav">
+        <button class="month-btn" onclick="App.UI.Calendar.changeMonth(-1)">‹</button>
+        <div class="month-display" id="monthDisplay"></div>
+        <button class="month-btn" onclick="App.UI.Calendar.changeMonth(1)">›</button>
+      </div>
+      <div class="view-toggle">
+        <button class="view-btn active" onclick="App.UI.Calendar.setView('month',this)">Month</button>
+        <button class="view-btn" onclick="App.UI.Calendar.setView('week',this)">Week</button>
+      </div>
+      <div class="daily-btns">
+        <button class="daily-btn checkin-btn" onclick="App.UI.Daily.showCheckins()">✈ Today's Check-Ins</button>
+        <button class="daily-btn checkout-btn" onclick="App.UI.Daily.showCheckouts()">🏠 Today's Check-Outs</button>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1a6fb5"></div>Occupied</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#2ea043"></div>Available</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--text-muted);opacity:.5"></div>Off-week</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f85149"></div>Repair</div>
+      </div>
+    </div>
+    <div class="calendar-wrap"><div class="calendar-grid" id="calendarGrid"></div></div>
+  </div>
+
+  <!-- BOOKING PAGE -->
+  <div class="page" id="page-booking">
+    <div class="booking-page">
+      <div class="booking-page-title">New Booking</div>
+      <div class="booking-page-sub">Schedule a room for a camp occupant</div>
+
+      <div class="form-card">
+        <div class="form-card-title">👤 Occupant Details</div>
+        <div class="form-grid">
+          <div class="form-group"><label>First Name *</label><input type="text" id="f-firstname" placeholder="e.g. James"></div>
+          <div class="form-group"><label>Last Name</label><input type="text" id="f-lastname" placeholder="e.g. Crawford"></div>
+          <div class="form-group"><label>Company / Contractor</label><input type="text" id="f-company" placeholder="e.g. Apex Drilling"></div>
+          <div class="form-group"><label>Role</label><input type="text" id="f-role" placeholder="e.g. Drill Operator"></div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-card-title">🏠 Room Selection</div>
+        <div class="room-picker" id="roomPicker"></div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-card-title">📅 Dates & Roster</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Check-In Date *</label><input type="date" id="f-checkin"></div>
+          <div class="form-group"><label>Check-Out Date *</label><input type="date" id="f-checkout"></div>
+          <div class="form-group">
+            <label>Roster Pattern</label>
+            <select id="f-roster" onchange="App.UI.BookingForm.onRosterChange()">
+              <option value="">No roster — custom dates</option>
+              <option value="7/7">7 on / 7 off</option>
+              <option value="14/7">14 on / 7 off</option>
+              <option value="14/14">14 on / 14 off</option>
+              <option value="21/7">21 on / 7 off</option>
+              <option value="28/14">28 on / 14 off</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Number of Rotations</label><input type="number" id="f-rotations" min="1" max="26" value="1" onchange="App.UI.BookingForm.onRosterChange()"></div>
+          <div class="form-group">
+            <label>Room during off-week</label>
+            <select id="f-offweek">
+              <option value="free">FREE — available to others</option>
+              <option value="held">HELD — stays assigned</option>
+            </select>
+          </div>
+          <div class="roster-info" id="rosterInfo"></div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-card-title">🧹 Room Condition</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Clean Status</label>
+            <div class="condition-row">
+              <button class="toggle-btn active-green" id="btn-clean" onclick="App.UI.BookingForm.setClean(true)">✔ Clean</button>
+              <button class="toggle-btn" id="btn-dirty" onclick="App.UI.BookingForm.setClean(false)">✖ Dirty</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Maintenance</label>
+            <div class="condition-row">
+              <button class="toggle-btn active-green" id="btn-ok" onclick="App.UI.BookingForm.setRepair(false)">✔ OK</button>
+              <button class="toggle-btn" id="btn-repair" onclick="App.UI.BookingForm.setRepair(true)">🔧 Repair Required</button>
+            </div>
+          </div>
+          <div class="form-group full"><label>Notes</label><textarea id="f-notes" placeholder="Any special requirements or maintenance notes..."></textarea></div>
+        </div>
+      </div>
+
+      <div class="submit-bar">
+        <button class="btn-large btn-reset" onclick="App.UI.BookingForm.resetForm()">Clear</button>
+        <button class="btn-large btn-submit" onclick="App.UI.BookingForm.submitBooking()">✔ Confirm Booking</button>
+      </div>
+
+      <div class="bookings-list">
+        <div class="bookings-list-title">
+          <span>All Bookings</span>
+          <span id="booking-count" style="font-size:13px;color:var(--text-muted)"></span>
+        </div>
+        <table class="bookings-table">
+          <thead><tr><th>Room</th><th>Occupant</th><th>Company</th><th>Check In</th><th>Check Out</th><th>Roster</th><th>Clean</th><th>Status</th><th></th></tr></thead>
+          <tbody id="bookingsTbody"></tbody>
+        </table>
+        <div id="bookingsEmpty" class="empty-state"><div class="icon">📋</div>No bookings yet.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPORTS PAGE -->
+  <div class="page" id="page-reports">
+    <div style="padding:24px;max-width:900px;margin:0 auto">
+      <div style="font-family:var(--font-head);font-size:32px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">Reports</div>
+      <div style="color:var(--text-dim);margin-bottom:28px">Generate occupancy and company booking reports</div>
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
+        <div style="font-family:var(--font-head);font-size:16px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--border)">📊 Report Settings</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label>Report Type</label>
+            <select id="rpt-type" onchange="App.UI.Reports.updatePreview()">
+              <option value="occupancy">Occupancy Report</option>
+              <option value="company">Company Breakdown</option>
+              <option value="combined">Combined (All Sheets)</option>
+            </select>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label>Period</label>
+            <select id="rpt-period" onchange="App.UI.Reports.updatePreview()">
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label>Year</label>
+            <select id="rpt-year" onchange="App.UI.Reports.updatePreview()"></select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label>From Month</label>
+            <select id="rpt-from">
+              <option value="0">January</option><option value="1">February</option><option value="2">March</option>
+              <option value="3">April</option><option value="4">May</option><option value="5">June</option>
+              <option value="6">July</option><option value="7">August</option><option value="8">September</option>
+              <option value="9">October</option><option value="10">November</option><option value="11">December</option>
+            </select>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label>To Month</label>
+            <select id="rpt-to">
+              <option value="0">January</option><option value="1">February</option><option value="2">March</option>
+              <option value="3">April</option><option value="4">May</option><option value="5">June</option>
+              <option value="6">July</option><option value="7">August</option><option value="8">September</option>
+              <option value="9">October</option><option value="10">November</option><option value="11" selected>December</option>
+            </select>
+          </div>
+        </div>
+        <div class="reports-actions">
+          <button onclick="App.UI.Reports.generateExcel()" style="background:var(--accent);color:#000;border:none;border-radius:var(--radius);padding:12px 24px;font-family:var(--font-head);font-size:14px;font-weight:900;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .15s" onmouseover="this.style.background='#ffc233'" onmouseout="this.style.background='var(--accent)'">
+            ⬇ Download Excel Report
+          </button>
+          <button
+            onclick="document.getElementById('excelUploadInput').click()"
+            style="background:var(--surface);color:var(--text-dim);border:1px solid var(--border);border-radius:var(--radius);padding:12px 24px;font-family:var(--font-head);font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .15s"
+            onmouseover="this.style.background='var(--surface2)';this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+            onmouseout="this.style.background='var(--surface)';this.style.borderColor='var(--border)';this.style.color='var(--text-dim)'">
+            ⬆ Upload Excel Data
+          </button>
+          <input
+            id="excelUploadInput"
+            type="file"
+            accept=".xlsx,.xls"
+            style="display:none"
+            onchange="App.Data.Import.handleUpload(event)">
+        </div>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
+        <div style="font-family:var(--font-head);font-size:16px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)">👁 Preview</div>
+        <div id="reportPreview" style="overflow-x:auto"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- POPUP -->
+<div class="popup-overlay" id="popupOverlay" onclick="App.UI.Popup.closeOnOverlay(event)">
+  <div class="popup" id="popupBox">
+    <div class="popup-head">
+      <div class="popup-title" id="popupTitle"></div>
+      <button class="popup-close" onclick="App.UI.Popup.close()">✕</button>
+    </div>
+    <div id="popupBody"></div>
+    <div class="popup-actions" id="popupActions"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+//  App — Layered Architecture
+//
+//  Layer 1 — Config        : App.Config
+//  Layer 2 — Data          : App.Data.API, App.Data.Store, App.Data.Import
+//  Layer 3 — Service       : App.Service.Roster, App.Service.Booking,
+//                            App.Service.Room, App.Service.Report
+//  Layer 4 — UI            : App.UI.Nav, App.UI.Calendar, App.UI.Popup,
+//                            App.UI.BookingForm, App.UI.Daily, App.UI.Reports
+//  Layer 5 — Auth          : App.Auth
+// ══════════════════════════════════════════════════════════════════════════════
+const App = {};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layer 1 — Config
+// ─────────────────────────────────────────────────────────────────────────────
+App.Config = {
+  WORKER_URL:  'https://campbook2.alvinkc.workers.dev',
+  SESSION_MS:  8 * 60 * 60 * 1000,   // 8 hours — must match worker
+  LS_TOKEN:    'campalloc_token_v1',   // localStorage key for session token
+  TOTAL_ROOMS: 83,
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layer 2 — Data: API  (D1 REST protocol via campbook2 worker)
+// Routes served by workers/worker.js + Cloudflare D1:
+//   GET    /api/rooms
+//   PUT    /api/rooms/:id
+//   GET    /api/bookings
+//   POST   /api/bookings
+//   PUT    /api/bookings/:id
+//   DELETE /api/bookings/:id
+//   GET    /api/checkins?date=YYYY-MM-DD
+//   GET    /api/checkouts?date=YYYY-MM-DD
+//   POST   /api/import
+// ─────────────────────────────────────────────────────────────────────────────
+App.Data = {};
+App.Data.API = {
+  _h() {
+    return {
+      'X-Session-Token': App.Auth.getToken(),
+      'Content-Type': 'application/json',
+    };
+  },
+
+  async _get(path) {
+    const r = await fetch(App.Config.WORKER_URL + path, { headers: this._h() });
+    if (!r.ok) {
+      const e = await r.json().catch(() => ({}));
+      throw new Error(e.error || 'HTTP ' + r.status);
+    }
+    return r.json();
+  },
+
+  async _send(method, path, body) {
+    App.UI.setSaveState('saving');
+    const r = await fetch(App.Config.WORKER_URL + path, {
+      method,
+      headers: this._h(),
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+    if (!r.ok) {
+      App.UI.setSaveState('error');
+      const e = await r.json().catch(() => ({}));
+      throw new Error(e.error || 'HTTP ' + r.status);
+    }
+    App.UI.setSaveState('synced');
+    return r.json();
+  },
+
+  // ── Public API methods ────────────────────────────────────────────────────
+
+  getRooms()    { return this._get('/api/rooms'); },
+  getBookings() { return this._get('/api/bookings'); },
+
+  updateRoom(room) {
+    return this._send('PUT', `/api/rooms/${room.id}`, { clean: room.clean, repair: room.repair });
+  },
+
+  createBooking(b) {
+    return this._send('POST', '/api/bookings', b);
+  },
+
+  updateBooking(b) {
+    return this._send('PUT', `/api/bookings/${encodeURIComponent(b.id)}`, b);
+  },
+
+  deleteBooking(id) {
+    return this._send('DELETE', `/api/bookings/${encodeURIComponent(id)}`);
+  },
+
+  getCheckins(date)  { return this._get(`/api/checkins?date=${date}`); },
+  getCheckouts(date) { return this._get(`/api/checkouts?date=${date}`); },
+
+  importData(payload) { return this._send('POST', '/api/import', payload); },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layer 2 — Data: In-memory Store
+// ─────────────────────────────────────────────────────────────────────────────
+App.Data.Store = {
+  rooms: Array.from({ length: App.Config.TOTAL_ROOMS }, (_, i) => ({
+    id: i + 1,
+    num: `R${String(i + 1).padStart(2, '0')}`,
+    clean: true, repair: false,
+  })),
+  bookings: [],
+
+  applyRooms(apiRooms) {
+    apiRooms.forEach(r => {
+      const local = this.rooms.find(x => x.id === r.id);
+      if (local) { local.clean = r.clean; local.repair = r.repair; }
+    });
+  },
+
+  async load() {
+    // D1 returns plain arrays; rooms always exist (seeded by migration)
+    const [apiRooms, apiBookings] = await Promise.all([
+      App.Data.API.getRooms(),
+      App.Data.API.getBookings(),
+    ]);
+    if (apiRooms  && apiRooms.length)   this.applyRooms(apiRooms);
+    if (apiBookings && apiBookings.length) this.bookings = apiBookings;
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layer 2 — Data: Import
+// Reads the exported "All Bookings" Excel sheet and imports into D1.
+// Expected sheet: "All Bookings"
+// Expected columns (row 4 = headers, row 5+ = data):
+//   Room | Occupant | Company | Role | Check In | Check Out | Roster | Clean | Repair Needed | Notes
+// ─────────────────────────────────────────────────────────────────────────────
+App.Data.Import = {
+
+  // Parse an Excel date serial or string into YYYY-MM-DD
+  _parseDate(val) {
+    if (!val) return '';
+    // Already a string like "2026-04-14" or "14/04/2026"
+    if (typeof val === 'string') {
+      // ISO format
+      if (/^\d{4}-\d{2}-\d{2}$/.test(val.trim())) return val.trim();
+      // AU format DD/MM/YYYY
+      const au = val.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (au) return `${au[3]}-${au[2].padStart(2,'0')}-${au[1].padStart(2,'0')}`;
+      // Try native parse as fallback
+      const d = new Date(val);
+      if (!isNaN(d)) return App.Service.Dates.fmt(d);
+      return '';
+    }
+    // Excel serial number (days since 1900-01-01, with Lotus 1900 leap bug)
+    if (typeof val === 'number') {
+      const d = new Date(Math.round((val - 25569) * 86400 * 1000));
+      return App.Service.Dates.fmt(d);
+    }
+    return '';
+  },
+
+  // Convert a row array + header map into a booking object
+  _rowToBooking(row, colIdx, rooms) {
+    const get = (name) => {
+      const i = colIdx[name];
+      return i !== undefined ? (row[i] ?? '') : '';
+    };
+
+    const roomNum = String(get('Room')).trim().toUpperCase();
+    const room = rooms.find(r => r.num.toUpperCase() === roomNum);
+    if (!room) throw new Error(`Unknown room: "${roomNum}"`);
+
+    const checkin  = this._parseDate(get('Check In'));
+    const checkout = this._parseDate(get('Check Out'));
+    if (!checkin)  throw new Error(`Invalid check-in date for row with occupant "${get('Occupant')}"`);
+    if (!checkout) throw new Error(`Invalid check-out date for row with occupant "${get('Occupant')}"`);
+
+    const rosterPattern = String(get('Roster')).trim();
+    let segments = [];
+    if (rosterPattern) {
+      const match = rosterPattern.match(/^(\d+)\/(\d+)$/);
+      if (match) {
+        const [, on, off] = match.map(Number);
+        // Calculate rotations from date span
+        const spanDays = Math.round((App.Service.Dates.parse(checkout) - App.Service.Dates.parse(checkin)) / 86400000) + 1;
+        const rotations = Math.max(1, Math.round(spanDays / (on + off)));
+        segments = App.Service.Roster.buildSegments(App.Service.Dates.parse(checkin), on, off, rotations);
+      }
+    }
+
+    const cleanVal = String(get('Clean')).trim().toLowerCase();
+    const repairVal = String(get('Repair Needed')).trim().toLowerCase();
+
+    return {
+      id: String(Date.now()) + Math.random().toString(36).slice(2,6),
+      roomId:        room.id,
+      name:          String(get('Occupant')).trim(),
+      company:       String(get('Company')).trim(),
+      role:          String(get('Role')).trim(),
+      checkin,
+      checkout,
+      clean:         cleanVal === 'yes' || cleanVal === '1' || cleanVal === 'true',
+      repair:        repairVal === 'yes' || repairVal === '1' || repairVal === 'true',
+      notes:         String(get('Notes')).trim(),
+      color:         (App.Data.Store.bookings.length) % 6,
+      rosterPattern,
+      offweek:       'held',
+      segments,
+    };
+  },
+
+  handleUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (typeof XLSX === 'undefined') {
+      App.UI.showToast('Excel library not loaded yet, please wait', true);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      App.UI.showLoading('Reading Excel file...');
+      try {
+        // Parse workbook
+        const wb = XLSX.read(e.target.result, { type: 'array', cellDates: false });
+
+        // Find the "All Bookings" sheet
+        const sheetName = wb.SheetNames.find(n => n.trim().toLowerCase() === 'all bookings');
+        if (!sheetName) throw new Error('Sheet "All Bookings" not found in the uploaded file');
+
+        const ws = wb.Sheets[sheetName];
+        // Convert to array of arrays (raw values)
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' });
+
+        // Find the header row (contains "Room" and "Occupant")
+        let headerRowIdx = -1;
+        for (let i = 0; i < Math.min(rows.length, 10); i++) {
+          const row = rows[i].map(c => String(c).trim().toLowerCase());
+          if (row.includes('room') && row.includes('occupant')) {
+            headerRowIdx = i;
+            break;
+          }
+        }
+        if (headerRowIdx === -1) throw new Error('Could not find header row with "Room" and "Occupant" columns');
+
+        // Build column index map
+        const headers = rows[headerRowIdx].map(c => String(c).trim());
+        const colIdx = {};
+        headers.forEach((h, i) => { colIdx[h] = i; });
+
+        // Validate required columns
+        const required = ['Room','Occupant','Check In','Check Out'];
+        const missing = required.filter(h => colIdx[h] === undefined);
+        if (missing.length) throw new Error(`Missing required columns: ${missing.join(', ')}`);
+
+        // Parse data rows (skip header and any blank rows)
+        const rooms = App.Data.Store.rooms;
+        const bookings = [];
+        const errors = [];
+
+        for (let i = headerRowIdx + 1; i < rows.length; i++) {
+          const row = rows[i];
+          // Skip blank rows
+          if (!row || row.every(c => c === '' || c === null || c === undefined)) continue;
+          // Skip if Room cell is empty
+          if (!row[colIdx['Room']]) continue;
+          try {
+            bookings.push(this._rowToBooking(row, colIdx, rooms));
+          } catch (err) {
+            errors.push(`Row ${i + 1}: ${err.message}`);
+          }
+        }
+
+        if (bookings.length === 0) {
+          throw new Error('No valid bookings found in the file' + (errors.length ? `\n${errors.join('\n')}` : ''));
+        }
+
+        // Show warning if some rows had errors but continue with valid ones
+        if (errors.length) {
+          console.warn('Import row errors:', errors);
+        }
+
+        // Send to D1 via API
+        App.UI.showLoading(`Importing ${bookings.length} bookings...`);
+        const result = await App.Data.API.importData({ bookings, rooms: [] });
+
+        // Reload store from D1
+        await App.Data.Store.load();
+        App.UI.Calendar.render();
+        App.UI.updateStats();
+        App.UI.BookingForm.renderList();
+
+        const warnMsg = errors.length ? ` (${errors.length} rows skipped)` : '';
+        App.UI.showToast(`Imported ${result.bookingsImported} bookings ✔${warnMsg}`);
+
+      } catch (err) {
+        App.UI.showToast('Import failed: ' + err.message, true);
+        console.error('Excel import error:', err);
+      } finally {
+        App.UI.hideLoading();
+        event.target.value = '';
+      }
+    };
+
+    reader.readAsArrayBuffer(file);
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layer 3 — Service: Roster helpers
+// ─────────────────────────────────────────────────────────────────────────────
+App.Service = {};
+App.Service.Roster = {
+  buildSegments(startDate, onDays, offDays, rotations) {
+    const segs = []; let cur = new Date(startDate);
+    for (let r = 0; r < rotations; r++) {
+      const onEnd = new Date(cur); onEnd.setDate(cur.getDate() + onDays - 1);
+      segs.push({ checkin: App.Service.Dates.fmt(cur), checkout: App.Service.Dates.fmt(onEnd), isOn: true });
+      cur = new Date(onEnd); cur.setDate(onEnd.getDate() + 1);
+      const offEnd = new Date(cur); offEnd.setDate(cur.getDate() + offDays - 1);
+      segs.push({ checkin: App.Service.Dates.fmt(cur), checkout: App.Service.Dates.fmt(offEnd), isOn: false });
+      cur = new Date(offEnd); cur.setDate(offEnd.getDate() + 1);
+    }
+    return segs;
+  },
+};
+
+App.Service.Dates = {
+  parse(s) { const [y, m, d] = s.split('-'); return new Date(+y, +m - 1, +d); },
+  fmt(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; },
+  display(s) {
+    if (!s) return '—';
+    return this.parse(s).toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' });
+  },
+  today() { const d = new Date(); d.setHours(0, 0, 0, 0); return d; },
+  todayStr() { return this.fmt(this.today()); },
+  overlap(s1, e1, s2, e2) { return this.parse(s1) < this.parse(e2) && this.parse(e1) > this.parse(s2); }, // checkout exclusive
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layer 3 — Service: Booking logic
+// ─────────────────────────────────────────────────────────────────────────────
+App.Service.Booking = {
+  occupiesOnDate(b, date) {
+    const d = new Date(date); d.setHours(0, 0, 0, 0);
+    if (b.segments && b.segments.length) {
+      return b.segments.some(s => {
+        if (!s.isOn && b.offweek === 'free') return false;
+        const cin = App.Service.Dates.parse(s.checkin), cout = App.Service.Dates.parse(s.checkout);
+        cin.setHours(0,0,0,0); cout.setHours(0,0,0,0);
+        return d >= cin && d < cout;  // checkout day is free (exclusive)
+      });
+    }
+    const cin = App.Service.Dates.parse(b.checkin), cout = App.Service.Dates.parse(b.checkout);
+    cin.setHours(0,0,0,0); cout.setHours(0,0,0,0);
+    return d >= cin && d < cout;  // checkout day is free (exclusive)
+  },
+
+  spansDate(b, date) {
+    const d = new Date(date); d.setHours(0,0,0,0);
+    const cin = App.Service.Dates.parse(b.checkin), cout = App.Service.Dates.parse(b.checkout);
+    cin.setHours(0,0,0,0); cout.setHours(0,0,0,0);
+    return d >= cin && d <= cout;
+  },
+
+  segmentOnDate(b, dateStr) {
+    if (!b.segments || !b.segments.length) return null;
+    return b.segments.find(s => {
+      const a = App.Service.Dates.parse(s.checkin), bx = App.Service.Dates.parse(s.checkout);
+      const d = App.Service.Dates.parse(dateStr);
+      a.setHours(0,0,0,0); bx.setHours(0,0,0,0); d.setHours(0,0,0,0);
+      return d >= a && d <= bx;
+    }) || null;
+  },
+
+  hasConflict(candidateBooking, existingBookings, excludeId) {
+    const { roomId, checkin, checkout, segments, offweek } = candidateBooking;
+    return existingBookings.some(x => {
+      if (x.id === excludeId || x.roomId !== roomId) return false;
+      if (!App.Service.Dates.overlap(checkin, checkout, x.checkin, x.checkout)) return false;
+      const dur = Math.round((App.Service.Dates.parse(checkout) - App.Service.Dates.parse(checkin)) / 86400000);
+      for (let i = 0; i < dur; i++) {  // checkout day is free (exclusive)
+        const dt = new Date(App.Service.Dates.parse(checkin)); dt.setDate(dt.getDate() + i);
+        let newOcc = true;
+        if (segments && segments.length) {
+          const seg = segments.find(s => {
+            const a = App.Service.Dates.parse(s.checkin), bx = App.Service.Dates.parse(s.checkout);
+            a.setHours(0,0,0,0); bx.setHours(0,0,0,0); dt.setHours(0,0,0,0);
+            return dt >= a && dt <= bx;
+          });
+          newOcc = seg ? seg.isOn : (offweek === 'held');
+        }
+        if (newOcc && this.occupiesOnDate(x, dt)) return true;
+      }
+      return false;
+    });
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layer 3 — Service: Room operations
+// ─────────────────────────────────────────────────────────────────────────────
+App.Service.Room = {
+  async toggleClean(roomId) {
+    const r = App.Data.Store.rooms.find(x => x.id === roomId);
+    r.clean = !r.clean;
+    await App.Data.API.updateRoom(r);
+    App.UI.Popup.close(); App.UI.Calendar.render(); App.UI.updateStats();
+    App.UI.showToast('Room status saved');
+  },
+  async toggleRepair(roomId) {
+    const r = App.Data.Store.rooms.find(x => x.id === roomId);
+    r.repair = !r.repair;
+    await App.Data.API.updateRoom(r);
+    App.UI.Popup.close(); App.UI.Calendar.render(); App.UI.updateStats();
+    App.UI.showToast('Maintenance status saved');
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layer 3 — Service: Reports data builder
+// ─────────────────────────────────────────────────────────────────────────────
+App.Service.Report = {
+  buildOccupancy(period, year, fromMonth, toMonth) {
+    const rows = [];
+    const ROOMS = App.Data.Store.rooms;
+    const bookings = App.Data.Store.bookings;
+    const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    if (period === 'monthly') {
+      for (let m = fromMonth; m <= toMonth; m++) {
+        const days = new Date(year, m+1, 0).getDate();
+        let occ = 0; const rb = {};
+        ROOMS.forEach(room => {
+          let c = 0;
+          for (let d = 1; d <= days; d++) {
+            const dt = new Date(year, m, d);
+            if (bookings.some(b => b.roomId === room.id && App.Service.Booking.occupiesOnDate(b, dt))) c++;
+          }
+          rb[room.num] = c; occ += c;
+        });
+        rows.push({ label: MN[m]+' '+year, totalOccupied: occ, totalPossible: ROOMS.length*days, pct: Math.round(occ/(ROOMS.length*days)*100)||0, roomBreakdown: rb });
+      }
+    } else if (period === 'weekly') {
+      let cur = new Date(year, fromMonth, 1); const end = new Date(year, toMonth+1, 0);
+      while (cur <= end) {
+        const wkStart = new Date(cur); const wkEnd = new Date(cur); wkEnd.setDate(cur.getDate()+6);
+        if (wkEnd > end) wkEnd.setTime(end.getTime());
+        const label = `${wkStart.getDate()}/${wkStart.getMonth()+1} – ${wkEnd.getDate()}/${wkEnd.getMonth()+1}`;
+        const days = Math.round((wkEnd-wkStart)/86400000)+1;
+        let occ = 0; const rb = {};
+        ROOMS.forEach(room => {
+          let c = 0;
+          for (let d = 0; d < days; d++) { const dt = new Date(wkStart); dt.setDate(wkStart.getDate()+d); if (bookings.some(b => b.roomId===room.id && App.Service.Booking.occupiesOnDate(b,dt))) c++; }
+          rb[room.num] = c; occ += c;
+        });
+        rows.push({ label, totalOccupied: occ, totalPossible: ROOMS.length*days, pct: Math.round(occ/(ROOMS.length*days)*100)||0, roomBreakdown: rb });
+        cur.setDate(cur.getDate()+7);
+      }
+    } else {
+      let cur = new Date(year, fromMonth, 1); const end = new Date(year, toMonth+1, 0);
+      while (cur <= end) {
+        const dt = new Date(cur);
+        const occ = ROOMS.filter(r => bookings.some(b => b.roomId===r.id && App.Service.Booking.occupiesOnDate(b,dt))).length;
+        const rb = {}; ROOMS.forEach(r => { rb[r.num] = bookings.some(b => b.roomId===r.id && App.Service.Booking.occupiesOnDate(b,dt)) ? 1 : 0; });
+        rows.push({ label: dt.toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'}), totalOccupied: occ, totalPossible: ROOMS.length, pct: Math.round(occ/ROOMS.length*100), roomBreakdown: rb });
+        cur.setDate(cur.getDate()+1);
+      }
+    }
+    return rows;
+  },
+
+  buildCompany(year, fromMonth, toMonth) {
+    const companies = {};
+    const rangeStart = new Date(year, fromMonth, 1), rangeEnd = new Date(year, toMonth+1, 0);
+    App.Data.Store.bookings.forEach(b => {
+      const cin = App.Service.Dates.parse(b.checkin), cout = App.Service.Dates.parse(b.checkout);
+      if (cout < rangeStart || cin > rangeEnd) return;
+      const co = b.company || '(No Company)';
+      if (!companies[co]) companies[co] = { bookings: 0, roomNights: 0, rooms: new Set(), people: new Set() };
+      companies[co].bookings++; companies[co].rooms.add(b.roomId); companies[co].people.add(b.name);
+      let d = new Date(Math.max(cin, rangeStart)); const dEnd = new Date(Math.min(cout, rangeEnd));
+      while (d <= dEnd) { if (App.Service.Booking.occupiesOnDate(b, d)) companies[co].roomNights++; d.setDate(d.getDate()+1); }
+    });
+    return Object.entries(companies).map(([name, v]) => ({
+      company: name, bookings: v.bookings, uniqueRooms: v.rooms.size, uniquePeople: v.people.size, roomNights: v.roomNights,
+    })).sort((a, b) => b.roomNights - a.roomNights);
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layer 4 — UI: shared helpers
+// ─────────────────────────────────────────────────────────────────────────────
+App.UI = {
+  showLoading(msg='Loading...') { document.getElementById('loadingMsg').textContent=msg; document.getElementById('loadingOverlay').classList.add('show'); },
+  hideLoading() { document.getElementById('loadingOverlay').classList.remove('show'); },
+  _toastTimer: null,
+  showToast(msg, isError=false) {
+    const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show'+(isError?' error':'');
+    clearTimeout(this._toastTimer); this._toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
+  },
+  setSaveState(state) {
+    const dot=document.getElementById('saveDot'), txt=document.getElementById('saveText');
+    if (!dot) return;
+    dot.className='save-dot'+(state==='saving'?' saving':state==='error'?' error':'');
+    txt.textContent=state==='saving'?'Saving...':state==='error'?'Save failed':'Synced';
+  },
+  updateStats() {
+    const today=new Date(); today.setHours(0,0,0,0);
+    const ROOMS=App.Data.Store.rooms, bookings=App.Data.Store.bookings;
+    const occ=ROOMS.filter(r=>bookings.some(b=>b.roomId===r.id&&App.Service.Booking.occupiesOnDate(b,today))).length;
+    document.getElementById('stat-occupied').textContent=occ;
+    document.getElementById('stat-vacant').textContent=App.Config.TOTAL_ROOMS-occ;
+    document.getElementById('stat-repair').textContent=ROOMS.filter(r=>r.repair).length;
+    document.getElementById('stat-dirty').textContent=ROOMS.filter(r=>!r.clean).length;
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layer 4 — UI: Navigation
+// ─────────────────────────────────────────────────────────────────────────────
+App.UI.Nav = {
+  showPage(page) {
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById('page-'+page).classList.add('active');
+    const idx={overview:0,booking:1,reports:2};
+    const tabs=document.querySelectorAll('.nav-tab');
+    if (tabs[idx[page]]) tabs[idx[page]].classList.add('active');
+    if (page==='overview') { App.UI.Calendar.render(); App.UI.updateStats(); }
+    if (page==='booking') { App.UI.BookingForm.renderRoomPicker(); App.UI.BookingForm.renderList(); }
+    if (page==='reports') { App.UI.Reports.initYears(); App.UI.Reports.updatePreview(); }
+  },
+  updateClock() {
+    const d=new Date();
+    document.getElementById('navTime').textContent=d.toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'})+'  '+d.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layer 4 — UI: Popup
+// ─────────────────────────────────────────────────────────────────────────────
+App.UI.Popup = {
+  open(title, bodyHtml, actionsHtml, wide=false) {
+    document.getElementById('popupTitle').textContent=title;
+    document.getElementById('popupBody').innerHTML=bodyHtml;
+    document.getElementById('popupActions').innerHTML=actionsHtml;
+    const box=document.getElementById('popupBox');
+    box.className=wide?'popup wide':'popup';
+    document.getElementById('popupOverlay').classList.add('open');
+  },
+  close() { document.getElementById('popupOverlay').classList.remove('open'); },
+  closeOnOverlay(e) { if(e.target===document.getElementById('popupOverlay')) this.close(); },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layer 4 — UI: Calendar
+// ─────────────────────────────────────────────────────────────────────────────
+App.UI.Calendar = {
+  year: new Date().getFullYear(),
+  month: new Date().getMonth(),
+  view: 'month',
+  dragId: null,
+
+  changeMonth(dir) {
+    this.month += dir;
+    if (this.month > 11) { this.month=0; this.year++; }
+    if (this.month < 0) { this.month=11; this.year--; }
+    this.render();
+  },
+  setView(v, btn) {
+    this.view=v;
+    document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    this.render();
+  },
+
+  render() {
+    const grid=document.getElementById('calendarGrid');
+    const today=new Date(); today.setHours(0,0,0,0);
+    let startDate, days;
+    if (this.view==='month') {
+      startDate=new Date(this.year,this.month,1);
+      days=new Date(this.year,this.month+1,0).getDate();
+    } else {
+      const now=new Date(this.year,this.month,1);
+      const dow=now.getDay();
+      startDate=new Date(now); startDate.setDate(now.getDate()-(dow===0?6:dow-1));
+      days=7;
+    }
+    const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('monthDisplay').textContent=MN[this.month]+' '+this.year;
+    const RCOL=120, DAY_W=Math.max(this.view==='month'?Math.floor((window.innerWidth-RCOL-48)/days):120,this.view==='month'?24:80);
+    const cols=`${RCOL}px `+`${DAY_W}px `.repeat(days);
+    const DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    let html=`<div class="cal-head-row" style="grid-template-columns:${cols}"><div class="cal-room-label">Room</div>`;
+    for (let d=0;d<days;d++) {
+      const dt=new Date(startDate); dt.setDate(startDate.getDate()+d);
+      const isToday=dt.getTime()===today.getTime(), isWknd=dt.getDay()===0||dt.getDay()===6;
+      html+=`<div class="cal-day-header${isToday?' today-col':''}" style="${isWknd?'color:var(--text-muted);':''}"><span class="cal-day-num">${dt.getDate()}</span><span class="cal-day-name">${DN[dt.getDay()]}</span></div>`;
+    }
+    html+='</div>';
+    App.Data.Store.rooms.forEach(room => {
+      html+=`<div class="cal-room-row" style="grid-template-columns:${cols}">`;
+      const bdg=`${room.clean?'<span class="badge clean">Clean</span>':'<span class="badge dirty">Dirty</span>'}${room.repair?'<span class="badge repair">Repair</span>':''}`;
+      html+=`<div class="cal-room-info" onclick="App.UI.RoomPopup.show(${room.id})"><div class="cal-room-num">${room.num}</div><div class="cal-room-status-badges">${bdg}</div></div>`;
+      const roomBks=App.Data.Store.bookings.filter(b=>b.roomId===room.id);
+      for (let d=0;d<days;d++) {
+        const dt=new Date(startDate); dt.setDate(startDate.getDate()+d);
+        const dtStr=App.Service.Dates.fmt(dt), isToday=dt.getTime()===today.getTime(), isWknd=dt.getDay()===0||dt.getDay()===6;
+
+        // Separate bookings into: those checking OUT today vs those spanning (not checkout day)
+        const checkoutBks = roomBks.filter(b => App.Service.Dates.fmt(App.Service.Dates.parse(b.checkout)) === dtStr);
+        const checkinBks  = roomBks.filter(b => App.Service.Dates.fmt(App.Service.Dates.parse(b.checkin))  === dtStr);
+        const midBks      = roomBks.filter(b => App.Service.Booking.spansDate(b,dt)
+                              && App.Service.Dates.fmt(App.Service.Dates.parse(b.checkout)) !== dtStr
+                              && App.Service.Dates.fmt(App.Service.Dates.parse(b.checkin))  !== dtStr);
+
+        // isSplit: someone checks out AND someone else checks in on same day
+        const isSplit = checkoutBks.length > 0 && checkinBks.length > 0;
+
+        const makeBar = (b, halfMode) => {
+          const seg=App.Service.Booking.segmentOnDate(b,dtStr);
+          const isOff=seg&&!seg.isOn, isFreeOff=isOff&&b.offweek==='free';
+          const cin=App.Service.Dates.parse(b.checkin), cout=App.Service.Dates.parse(b.checkout);
+          const isStart=App.Service.Dates.fmt(cin)===dtStr, isEnd=App.Service.Dates.fmt(cout)===dtStr;
+
+          let posClass, label;
+          if (halfMode === 'top') {
+            // Outgoing — always the end of a bar
+            const soloTop = isStart; // solo if also starts here (1-day booking on checkout day of another)
+            posClass = soloTop ? 'bar-top bar-solo-top' : 'bar-top';
+            label = isFreeOff ? '(off)' : b.name.split(' ')[0];
+          } else if (halfMode === 'bot') {
+            // Incoming — always the start of a bar
+            const soloBot = isEnd; // solo if also ends here (same-day booking)
+            posClass = soloBot ? 'bar-bot bar-solo-bot' : 'bar-bot';
+            label = isFreeOff ? '(off)' : b.name.split(' ')[0];
+          } else {
+            // Normal full-height bar
+            posClass = isStart&&isEnd?'bar-solo':isStart?'bar-start':isEnd?'bar-end':'bar-mid';
+            label = isFreeOff?'(off)':(isStart||d===0)?b.name.split(' ')[0]:'';
+          }
+
+          return `<div class="booking-bar color-${(b.color||0)%6} ${posClass}${isOff?' off-week':''}"
+            ${!isOff&&halfMode!=='top'?`draggable="true" ondragstart="App.UI.Calendar.onDragStart(event,'${b.id}')"`:''}
+            onclick="App.UI.BookingPopup.show('${b.id}',event)"
+            title="${(b.name||'').replace(/"/g,'&quot;')}${b.rosterPattern?' ['+b.rosterPattern+']':''} | ${b.checkin} → ${b.checkout}${isOff?' | OFF WEEK':''}">
+            ${label}</div>`;
+        };
+
+        let bars = '';
+        if (isSplit) {
+          // Split cell: top half = outgoing (checkout), bottom half = incoming (checkin)
+          bars += '<div class="split-divider"></div>';
+          checkoutBks.forEach(b => { bars += makeBar(b, 'top'); });
+          checkinBks.forEach(b  => { bars += makeBar(b, 'bot'); });
+        } else {
+          // Normal cell: all spanning bookings + any checkout-only or checkin-only
+          const allBks = [...new Map([...checkoutBks,...checkinBks,...midBks].map(b=>[b.id,b])).values()];
+          allBks.forEach(b => { bars += makeBar(b, null); });
+        }
+
+        html+=`<div class="cal-day-cell${isToday?' today-col':''}${isWknd?' weekend':''}"
+          ondragover="App.UI.Calendar.onDragOver(event)" ondragleave="App.UI.Calendar.onDragLeave(event)"
+          ondrop="App.UI.Calendar.onDrop(event,'${room.id}','${dtStr}')">${bars}</div>`;
+      }
+      html+='</div>';
+    });
+    grid.innerHTML=html;
+  },
+
+  onDragStart(e, id) { this.dragId=id; e.dataTransfer.effectAllowed='move'; e.target.classList.add('dragging'); },
+  onDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); },
+  onDragLeave(e) { e.currentTarget.classList.remove('drag-over'); },
+
+  async onDrop(e, roomId, dateStr) {
+    e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+    if (!this.dragId) return;
+    const _id=this.dragId; this.dragId=null;
+    const b=App.Data.Store.bookings.find(x=>x.id===_id); if (!b) return;
+    const dur=Math.round((App.Service.Dates.parse(b.checkout)-App.Service.Dates.parse(b.checkin))/86400000);
+    const newStart=App.Service.Dates.parse(dateStr); const newEnd=new Date(newStart); newEnd.setDate(newStart.getDate()+dur);
+    const newCI=App.Service.Dates.fmt(newStart), newCO=App.Service.Dates.fmt(newEnd);
+    const draft={...b, roomId:+roomId, checkin:newCI, checkout:newCO, segments:[...b.segments]};
+    if (App.Service.Booking.hasConflict(draft, App.Data.Store.bookings, b.id)) {
+      App.UI.showToast('Room conflict for those dates', true); return;
+    }
+    const prev={roomId:b.roomId,checkin:b.checkin,checkout:b.checkout,segments:[...b.segments]};
+    b.roomId=+roomId; b.checkin=newCI; b.checkout=newCO;
+    if (b.segments.length) {
+      const offset=Math.round((newStart-App.Service.Dates.parse(prev.checkin))/86400000);
+      b.segments=b.segments.map(s=>{
+        const sc=new Date(App.Service.Dates.parse(s.checkin)); sc.setDate(sc.getDate()+offset);
+        const se=new Date(App.Service.Dates.parse(s.checkout)); se.setDate(se.getDate()+offset);
+        return{...s,checkin:App.Service.Dates.fmt(sc),checkout:App.Service.Dates.fmt(se)};
+      });
+    }
+    this.render(); App.UI.updateStats();
+    try {
+      App.UI.setSaveState('saving');
+      await App.Data.API.updateBooking(b);
+      App.UI.setSaveState('synced');
+      App.UI.showToast('Booking moved ✔');
+    } catch(err) {
+      Object.assign(b,prev); this.render(); App.UI.setSaveState('error');
+      App.UI.showToast('Save failed: '+err.message,true);
+    }
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layer 4 — UI: Room Popup
+// ─────────────────────────────────────────────────────────────────────────────
+App.UI.RoomPopup = {
+  show(roomId) {
+    const room=App.Data.Store.rooms.find(r=>r.id===roomId);
+    const today=new Date();
+    const ab=App.Data.Store.bookings.find(b=>b.roomId===roomId&&App.Service.Booking.occupiesOnDate(b,today));
+    const D=App.Service.Dates;
+    const body=`
+      <div class="popup-row">
+        <div class="popup-section"><div class="popup-label">Clean Status</div><div class="popup-value">${room.clean?'✅ Clean':'🧹 Needs Cleaning'}</div></div>
+        <div class="popup-section"><div class="popup-label">Maintenance</div><div class="popup-value">${room.repair?'🔧 Repair Required':'✅ No Issues'}</div></div>
+      </div>
+      <div class="popup-section"><div class="popup-label">Current Occupant</div><div class="popup-value">${ab?ab.name+(ab.company?` (${ab.company})`:''): '— Vacant'}</div></div>
+      ${ab?`<div class="popup-row"><div class="popup-section"><div class="popup-label">Check In</div><div class="popup-value">${D.display(ab.checkin)}</div></div><div class="popup-section"><div class="popup-label">Check Out</div><div class="popup-value">${D.display(ab.checkout)}</div></div></div>`:''}
+      ${ab&&ab.rosterPattern?`<div class="popup-section"><div class="popup-label">Roster</div><div class="popup-value">${ab.rosterPattern} — off-week: ${ab.offweek==='free'?'Room FREE':'Room HELD'}</div></div>`:''}`;
+    const actions=`
+      <button class="btn ${room.clean?'btn-ghost':'btn-primary'}" onclick="App.Service.Room.toggleClean(${roomId})">${room.clean?'Mark Dirty':'Mark Clean'}</button>
+      <button class="btn ${room.repair?'btn-ghost':'btn-danger'}" onclick="App.Service.Room.toggleRepair(${roomId})">${room.repair?'Clear Repair':'Flag Repair'}</button>
+      <button class="btn btn-ghost" onclick="App.UI.Popup.close()">Close</button>`;
+    App.UI.Popup.open(`${room.num} — Room Details`, body, actions);
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layer 4 — UI: Booking Popup
+// ─────────────────────────────────────────────────────────────────────────────
+App.UI.BookingPopup = {
+  show(id, e) {
+    e.stopPropagation();
+    const b=App.Data.Store.bookings.find(x=>x.id===id); if (!b) return;
+    const room=App.Data.Store.rooms.find(r=>r.id===b.roomId);
+    App.UI.Popup.open(`${room.num} — ${b.name}`, this._viewHtml(b), this._viewActions(b));
+  },
+
+  _viewHtml(b) {
+    const D=App.Service.Dates;
+    return `
+      <div class="popup-row">
+        <div class="popup-section"><div class="popup-label">Role</div><div class="popup-value">${b.role||'—'}</div></div>
+        <div class="popup-section"><div class="popup-label">Company</div><div class="popup-value">${b.company||'—'}</div></div>
+      </div>
+      <div class="popup-row">
+        <div class="popup-section"><div class="popup-label">Check In</div><div class="popup-value">${D.display(b.checkin)}</div></div>
+        <div class="popup-section"><div class="popup-label">Check Out</div><div class="popup-value">${D.display(b.checkout)}</div></div>
+      </div>
+      ${b.rosterPattern?`<div class="popup-section"><div class="popup-label">Roster</div><div class="popup-value">${b.rosterPattern} — off-week: ${b.offweek==='free'?'Room FREE':'Room HELD'}</div></div>`:''}
+      ${b.notes?`<div class="popup-section"><div class="popup-label">Notes</div><div class="popup-value">${b.notes}</div></div>`:''}`;
+  },
+
+  _viewActions(b) {
+    return `
+      <button class="btn btn-primary" onclick="App.UI.BookingPopup.showEdit('${b.id}')">✏️ Edit</button>
+      <button class="btn btn-danger" onclick="App.UI.BookingPopup.deleteBooking('${b.id}')">Delete</button>
+      <button class="btn btn-ghost" onclick="App.UI.Popup.close()">Close</button>`;
+  },
+
+  showEdit(id) {
+    const b=App.Data.Store.bookings.find(x=>x.id===id);
+    const roomOpts=App.Data.Store.rooms.map(r=>`<option value="${r.id}"${r.id===b.roomId?' selected':''}>${r.num}</option>`).join('');
+    const rOpts=[['','No roster'],['7/7','7 on / 7 off'],['14/7','14 on / 7 off'],['14/14','14 on / 14 off'],['21/7','21 on / 7 off'],['28/14','28 on / 14 off']].map(([v,l])=>`<option value="${v}"${b.rosterPattern===v?' selected':''}>${l}</option>`).join('');
+    const rots=(b.segments||[]).filter(s=>s.isOn).length||1;
+    const body=`
+      <div class="popup-row" style="margin-bottom:12px">
+        <div class="popup-section"><div class="popup-label">Occupant Name</div><input class="popup-input" id="ep-name" value="${b.name}"></div>
+        <div class="popup-section"><div class="popup-label">Room</div><select class="popup-input" id="ep-room">${roomOpts}</select></div>
+      </div>
+      <div class="popup-row" style="margin-bottom:12px">
+        <div class="popup-section"><div class="popup-label">Company</div><input class="popup-input" id="ep-company" value="${b.company}"></div>
+        <div class="popup-section"><div class="popup-label">Role</div><input class="popup-input" id="ep-role" value="${b.role}"></div>
+      </div>
+      <div class="popup-row" style="margin-bottom:12px">
+        <div class="popup-section"><div class="popup-label">Check-In</div><input class="popup-input" type="date" id="ep-checkin" value="${b.checkin}"></div>
+        <div class="popup-section"><div class="popup-label">Check-Out</div><input class="popup-input" type="date" id="ep-checkout" value="${b.checkout}"></div>
+      </div>
+      <div class="popup-row" style="margin-bottom:12px">
+        <div class="popup-section"><div class="popup-label">Roster</div><select class="popup-input" id="ep-roster" onchange="document.getElementById('ep-rots-row').style.display=this.value?'grid':'none'">${rOpts}</select></div>
+        <div class="popup-section"><div class="popup-label">Off-week</div><select class="popup-input" id="ep-offweek"><option value="free"${b.offweek==='free'?' selected':''}>FREE</option><option value="held"${b.offweek==='held'?' selected':''}>HELD</option></select></div>
+      </div>
+      <div class="popup-row" id="ep-rots-row" style="margin-bottom:12px;${b.rosterPattern?'':'display:none'}">
+        <div class="popup-section"><div class="popup-label">Rotations</div><input class="popup-input" type="number" id="ep-rotations" min="1" max="26" value="${rots}"></div>
+        <div class="popup-section"></div>
+      </div>
+      <div class="popup-section"><div class="popup-label">Notes</div><textarea class="popup-input" id="ep-notes" style="min-height:60px">${b.notes}</textarea></div>`;
+    const actions=`
+      <button class="btn btn-primary" onclick="App.UI.BookingPopup.saveEdit('${id}')">💾 Save</button>
+      <button class="btn btn-ghost" onclick="App.UI.BookingPopup.show('${id}',{stopPropagation:()=>{}})">Cancel</button>`;
+    App.UI.Popup.open('Edit Booking', body, actions);
+  },
+
+  async saveEdit(id) {
+    const b=App.Data.Store.bookings.find(x=>x.id===id); if (!b) return;
+    const name=document.getElementById('ep-name').value.trim();
+    const roomId=+document.getElementById('ep-room').value;
+    const ci=document.getElementById('ep-checkin').value;
+    const co=document.getElementById('ep-checkout').value;
+    const roster=document.getElementById('ep-roster').value;
+    const offweek=document.getElementById('ep-offweek').value;
+    const rots=+document.getElementById('ep-rotations').value||1;
+    if (!name) { App.UI.showToast('Name required',true); return; }
+    if (!ci||!co) { App.UI.showToast('Dates required',true); return; }
+    if (ci>co) { App.UI.showToast('Check-out must be after check-in',true); return; }
+    if (App.Data.Store.bookings.some(x=>x.id!==id&&x.roomId===roomId&&App.Service.Dates.overlap(ci,co,x.checkin,x.checkout))) {
+      App.UI.showToast('Room conflict',true); return;
+    }
+    let segs=[];
+    if (roster) { const[on,off]=roster.split('/').map(Number); segs=App.Service.Roster.buildSegments(App.Service.Dates.parse(ci),on,off,rots); }
+    const finalCO=roster?(segs[segs.length-1].checkout):co;
+    Object.assign(b,{name,roomId,checkin:ci,checkout:finalCO,company:document.getElementById('ep-company').value.trim(),role:document.getElementById('ep-role').value.trim(),notes:document.getElementById('ep-notes').value.trim(),rosterPattern:roster,offweek,segments:segs});
+    App.UI.showLoading('Saving...');
+    try {
+      App.UI.setSaveState('saving');
+      await App.Data.API.updateBooking(b);
+      App.UI.setSaveState('synced');
+      App.UI.Popup.close(); App.UI.Calendar.render(); App.UI.updateStats(); App.UI.BookingForm.renderList();
+      App.UI.showToast('Booking updated ✔');
+    } catch(e) { App.UI.setSaveState('error'); App.UI.showToast('Save failed: '+e.message,true); }
+    finally { App.UI.hideLoading(); }
+  },
+
+  async deleteBooking(id) {
+    App.UI.showLoading('Deleting...');
+    try {
+      App.UI.setSaveState('saving');
+      await App.Data.API.deleteBooking(id);
+      App.Data.Store.bookings = App.Data.Store.bookings.filter(x => x.id !== id);
+      App.UI.setSaveState('synced');
+      App.UI.Popup.close(); App.UI.Calendar.render(); App.UI.updateStats(); App.UI.BookingForm.renderList();
+      App.UI.showToast('Booking deleted');
+    } catch(e) { App.UI.setSaveState('error'); App.UI.showToast('Delete failed: '+e.message,true); }
+    finally { App.UI.hideLoading(); }
+  },
+
+  showById(id) {
+    const b=App.Data.Store.bookings.find(x=>x.id===id); if (!b) return;
+    const room=App.Data.Store.rooms.find(r=>r.id===b.roomId);
+    App.UI.Popup.open(`${room.num} — ${b.name}`, this._viewHtml(b), this._viewActions(b));
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layer 4 — UI: Daily Check-in / Check-out
+// ─────────────────────────────────────────────────────────────────────────────
+App.UI.Daily = {
+  async showCheckins(dateStr) {
+    const date=dateStr||App.Service.Dates.todayStr();
+    App.UI.showLoading('Loading check-ins...');
+    try {
+      const items=await App.Data.API.getCheckins(date);
+      const D=App.Service.Dates;
+      const body=items.length===0
+        ? `<div class="daily-empty"><div class="icon">✅</div>No check-ins for ${D.display(date)}</div>`
+        : `<div class="daily-list">
+            <div class="daily-list-header"><div>Room</div><div>Occupant</div><div>Company / Role</div><div>Stay</div></div>
+            ${items.map(b=>`
+              <div class="daily-list-row">
+                <div class="daily-list-room">${App.Data.Store.rooms.find(r=>r.id===b.roomId)?.num||'?'}</div>
+                <div class="daily-list-name">${b.name}</div>
+                <div class="daily-list-company">${b.company||'—'}${b.role?` · ${b.role}`:''}</div>
+                <div class="daily-list-dates">${D.display(b.checkin)} →<br>${D.display(b.checkout)}</div>
+              </div>`).join('')}
+           </div>`;
+      App.UI.Popup.open(`✈ Check-ins — ${D.display(date)}`, body,
+        `<button class="btn btn-ghost" onclick="App.UI.Popup.close()">Close</button>`, true);
+    } catch(e) { App.UI.showToast('Error: '+e.message,true); }
+    finally { App.UI.hideLoading(); }
+  },
+
+  async showCheckouts(dateStr) {
+    const date=dateStr||App.Service.Dates.todayStr();
+    App.UI.showLoading('Loading check-outs...');
+    try {
+      const items=await App.Data.API.getCheckouts(date);
+      const D=App.Service.Dates;
+      const body=items.length===0
+        ? `<div class="daily-empty"><div class="icon">🏠</div>No check-outs for ${D.display(date)}</div>`
+        : `<div class="daily-list">
+            <div class="daily-list-header"><div>Room</div><div>Occupant</div><div>Company / Role</div><div>Dates</div></div>
+            ${items.map(b=>`
+              <div class="daily-list-row">
+                <div class="daily-list-room">${App.Data.Store.rooms.find(r=>r.id===b.roomId)?.num||'?'}</div>
+                <div class="daily-list-name">${b.name}</div>
+                <div class="daily-list-company">${b.company||'—'}${b.role?` · ${b.role}`:''}</div>
+                <div class="daily-list-dates">${D.display(b.checkin)} →<br>${D.display(b.checkout)}</div>
+              </div>`).join('')}
+           </div>`;
+      App.UI.Popup.open(`🏠 Check-outs — ${D.display(date)}`, body,
+        `<button class="btn btn-ghost" onclick="App.UI.Popup.close()">Close</button>`, true);
+    } catch(e) { App.UI.showToast('Error: '+e.message,true); }
+    finally { App.UI.hideLoading(); }
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layer 4 — UI: Booking Form
+// ─────────────────────────────────────────────────────────────────────────────
+App.UI.BookingForm = {
+  selectedRoom: null,
+  isClean: true,
+  needsRepair: false,
+
+  renderRoomPicker() {
+    const cin=document.getElementById('f-checkin').value, cout=document.getElementById('f-checkout').value;
+    document.getElementById('roomPicker').innerHTML=App.Data.Store.rooms.map(room=>{
+      const isRepair=room.repair;
+      const conflict=cin&&cout&&App.Data.Store.bookings.some(b=>{
+        if (b.roomId!==room.id||!App.Service.Dates.overlap(cin,cout,b.checkin,b.checkout)) return false;
+        for (let dt=new Date(App.Service.Dates.parse(cin));dt<App.Service.Dates.parse(cout);dt.setDate(dt.getDate()+1)) {
+          if (App.Service.Booking.occupiesOnDate(b,new Date(dt))) return true;  // checkout exclusive
+        }
+        return false;
+      });
+      const isSel=this.selectedRoom===room.id;
+      let cls='',tag='';
+      if (isSel) cls='selected'; else if (isRepair){cls='repair';tag='Repair';} else if (conflict){cls='occupied';tag='Booked';}
+      return `<div class="room-option ${cls}" onclick="App.UI.BookingForm.selectRoom(${room.id},'${cls}')">${room.num}<span class="room-tag">${tag}</span></div>`;
+    }).join('');
+  },
+
+  selectRoom(id, cls) {
+    if (cls==='repair'||cls==='occupied') return;
+    this.selectedRoom=id; this.renderRoomPicker();
+  },
+
+  onRosterChange() {
+    const pattern=document.getElementById('f-roster').value, cin=document.getElementById('f-checkin').value;
+    const info=document.getElementById('rosterInfo');
+    if (!pattern||!cin) { info.classList.remove('show'); return; }
+    const[on,off]=pattern.split('/').map(Number), rots=+document.getElementById('f-rotations').value||1;
+    const segs=App.Service.Roster.buildSegments(App.Service.Dates.parse(cin),on,off,rots);
+    document.getElementById('f-checkout').value=segs[segs.length-1].checkout;
+    this.renderRoomPicker();
+    const onSegs=segs.filter(s=>s.isOn), offSegs=segs.filter(s=>!s.isOn);
+    const ow=document.getElementById('f-offweek').value;
+    const D=App.Service.Dates;
+    info.innerHTML=`<strong>${rots} rotation${rots>1?'s':''} — ${on} on / ${off} off</strong><br>
+      On-site: ${onSegs.map(s=>`${D.display(s.checkin)} – ${D.display(s.checkout)}`).join(', ')}<br>
+      Off-week (${ow==='free'?'room available to others':'room held'}): ${offSegs.map(s=>`${D.display(s.checkin)} – ${D.display(s.checkout)}`).join(', ')}`;
+    info.classList.add('show');
+  },
+
+  setClean(v) {
+    this.isClean=v;
+    document.getElementById('btn-clean').className=`toggle-btn${v?' active-green':''}`;
+    document.getElementById('btn-dirty').className=`toggle-btn${!v?' active-yellow':''}`;
+  },
+
+  setRepair(v) {
+    this.needsRepair=v;
+    document.getElementById('btn-ok').className=`toggle-btn${!v?' active-green':''}`;
+    document.getElementById('btn-repair').className=`toggle-btn${v?' active-red':''}`;
+  },
+
+  async submitBooking() {
+    const fn=document.getElementById('f-firstname').value.trim();
+    const ln=document.getElementById('f-lastname').value.trim();
+    const cin=document.getElementById('f-checkin').value, cout=document.getElementById('f-checkout').value;
+    const pattern=document.getElementById('f-roster').value, offweek=document.getElementById('f-offweek').value;
+    const rots=+document.getElementById('f-rotations').value||1;
+    if (!fn) { App.UI.showToast('First name is required',true); return; }
+    if (!this.selectedRoom) { App.UI.showToast('Please select a room',true); return; }
+    if (!cin||!cout) { App.UI.showToast('Please enter check-in and check-out dates',true); return; }
+    if (cin>cout) { App.UI.showToast('Check-out must be after check-in',true); return; }
+    const fullName=(fn+(ln?' '+ln:'')).trim();
+    let segs=[];
+    if (pattern) { const[on,off]=pattern.split('/').map(Number); segs=App.Service.Roster.buildSegments(App.Service.Dates.parse(cin),on,off,rots); }
+    const nb={id:String(Date.now()),roomId:this.selectedRoom,name:fullName,company:document.getElementById('f-company').value.trim(),role:document.getElementById('f-role').value.trim(),checkin:cin,checkout:cout,clean:this.isClean,repair:this.needsRepair,notes:document.getElementById('f-notes').value.trim(),color:App.Data.Store.bookings.length%6,rosterPattern:pattern,offweek,segments:segs};
+    if (App.Service.Booking.hasConflict(nb, App.Data.Store.bookings, null)) {
+      App.UI.showToast('Room conflict — overlapping occupied periods',true); return;
+    }
+    App.UI.showLoading('Saving booking...');
+    try {
+      App.UI.setSaveState('saving');
+      // createBooking pushes nb into store and flushes; update room then flush rooms too
+      // Save to D1 via worker, then update room condition
+      await App.Data.API.createBooking(nb);
+      const room=App.Data.Store.rooms.find(r=>r.id===this.selectedRoom);
+      room.clean=this.isClean; room.repair=this.needsRepair;
+      await App.Data.API.updateRoom(room);
+      // Reload store from D1 so UI is in sync
+      App.Data.Store.bookings.push(nb);
+      App.UI.setSaveState('synced');
+      App.UI.showToast('Booking saved ✔');
+      this.resetForm(); App.UI.Calendar.render(); App.UI.updateStats(); this.renderList();
+    } catch(e) { App.UI.setSaveState('error'); App.UI.showToast('Error: '+e.message,true); }
+    finally { App.UI.hideLoading(); }
+  },
+
+  resetForm() {
+    ['f-firstname','f-lastname','f-company','f-role','f-checkin','f-checkout','f-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f-roster').value=''; document.getElementById('f-rotations').value='1';
+    document.getElementById('rosterInfo').classList.remove('show');
+    this.selectedRoom=null; this.isClean=true; this.needsRepair=false;
+    this.setClean(true); this.setRepair(false); this.renderRoomPicker();
+  },
+
+  renderList() {
+    const tbody=document.getElementById('bookingsTbody'), empty=document.getElementById('bookingsEmpty');
+    const count=document.getElementById('booking-count');
+    const bks=App.Data.Store.bookings;
+    count.textContent=`${bks.length} booking${bks.length!==1?'s':''}`;
+    if (!bks.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
+    empty.style.display='none';
+    tbody.innerHTML=[...bks].reverse().map(b=>{
+      const room=App.Data.Store.rooms.find(r=>r.id===b.roomId); const today=new Date(); const active=App.Service.Booking.occupiesOnDate(b,today);
+      return`<tr><td><span class="room-chip">${room?room.num:'?'}</span></td><td>${b.name}</td><td style="color:var(--text-dim)">${b.company||'—'}</td><td>${App.Service.Dates.display(b.checkin)}</td><td>${App.Service.Dates.display(b.checkout)}</td><td style="color:var(--text-dim)">${b.rosterPattern||'—'}</td><td>${b.clean?'✅':'🧹'}</td><td><span style="color:${active?'#3fb950':'var(--text-muted)'};">${active?'● Active':'○ Scheduled'}</span></td><td><button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="App.UI.BookingPopup.showById('${b.id}')">✏</button></td></tr>`;
+    }).join('');
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layer 4 — UI: Reports
+// ─────────────────────────────────────────────────────────────────────────────
+App.UI.Reports = {
+  initYears() {
+    const sel=document.getElementById('rpt-year'); if (!sel||sel.options.length>0) return;
+    const y=new Date().getFullYear();
+    for (let i=y-1;i<=y+1;i++) { const o=document.createElement('option'); o.value=i; o.textContent=i; if(i===y)o.selected=true; sel.appendChild(o); }
+  },
+
+  updatePreview() {
+    const type=document.getElementById('rpt-type')?.value||'occupancy';
+    const period=document.getElementById('rpt-period')?.value||'monthly';
+    const year=+document.getElementById('rpt-year')?.value||new Date().getFullYear();
+    const fromMonth=+document.getElementById('rpt-from')?.value||0;
+    const toMonth=+document.getElementById('rpt-to')?.value||11;
+    const preview=document.getElementById('reportPreview'); if (!preview) return;
+    let html='';
+    if (type==='occupancy'||type==='combined') {
+      const rows=App.Service.Report.buildOccupancy(period,year,fromMonth,toMonth);
+      html+=`<div style="font-family:var(--font-head);font-size:13px;font-weight:700;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase;margin-bottom:10px">Occupancy — ${period}</div>`;
+      html+='<table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:24px"><thead><tr style="background:var(--surface2)">';
+      ['Period','Rooms Occ.','Available','Occupancy %'].forEach(h=>{ html+=`<th style="text-align:left;padding:8px 10px;border:1px solid var(--border);font-family:var(--font-head);font-size:11px;letter-spacing:1px;text-transform:uppercase">${h}</th>`; });
+      html+='</tr></thead><tbody>';
+      rows.slice(0,15).forEach((r,i)=>{
+        const pctColor=r.pct>=80?'#c62828':r.pct>=50?'#f57f17':'#2e7d32';
+        html+=`<tr style="background:${i%2===0?'var(--surface)':'var(--surface2)'}"><td style="padding:7px 10px;border:1px solid var(--border)">${r.label}</td><td style="padding:7px 10px;border:1px solid var(--border);text-align:center">${r.totalOccupied}</td><td style="padding:7px 10px;border:1px solid var(--border);text-align:center">${r.totalPossible}</td><td style="padding:7px 10px;border:1px solid var(--border);text-align:center;color:${pctColor};font-weight:700">${r.pct}%</td></tr>`;
+      });
+      if (rows.length>15) html+=`<tr><td colspan="4" style="padding:7px 10px;border:1px solid var(--border);color:var(--text-muted);text-align:center;font-style:italic">... and ${rows.length-15} more rows in Excel export</td></tr>`;
+      html+='</tbody></table>';
+    }
+    if (type==='company'||type==='combined') {
+      const rows=App.Service.Report.buildCompany(year,fromMonth,toMonth);
+      html+=`<div style="font-family:var(--font-head);font-size:13px;font-weight:700;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase;margin-bottom:10px">Company Breakdown</div>`;
+      html+='<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:var(--surface2)">';
+      ['Company','Bookings','People','Rooms Used','Room-Nights'].forEach(h=>{ html+=`<th style="text-align:left;padding:8px 10px;border:1px solid var(--border);font-family:var(--font-head);font-size:11px;letter-spacing:1px;text-transform:uppercase">${h}</th>`; });
+      html+='</tr></thead><tbody>';
+      rows.forEach((r,i)=>{ html+=`<tr style="background:${i%2===0?'var(--surface)':'var(--surface2)'}"><td style="padding:7px 10px;border:1px solid var(--border);font-weight:600">${r.company}</td><td style="padding:7px 10px;border:1px solid var(--border)">${r.bookings}</td><td style="padding:7px 10px;border:1px solid var(--border)">${r.uniquePeople}</td><td style="padding:7px 10px;border:1px solid var(--border)">${r.uniqueRooms}</td><td style="padding:7px 10px;border:1px solid var(--border);font-weight:700;color:var(--accent)">${r.roomNights}</td></tr>`; });
+      if (!rows.length) html+='<tr><td colspan="5" style="padding:20px;text-align:center;color:var(--text-muted)">No bookings in selected period</td></tr>';
+      html+='</tbody></table>';
+    }
+    preview.innerHTML=html||'<div style="color:var(--text-muted);text-align:center;padding:20px">Select report type above</div>';
+  },
+
+  generateExcel() {
+    if (typeof XLSX==='undefined') { App.UI.showToast('SheetJS not loaded yet',true); return; }
+    const type=document.getElementById('rpt-type').value;
+    const period=document.getElementById('rpt-period').value;
+    const year=+document.getElementById('rpt-year').value;
+    const fromMonth=+document.getElementById('rpt-from').value;
+    const toMonth=+document.getElementById('rpt-to').value;
+    const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const ROOMS=App.Data.Store.rooms;
+    const wb=XLSX.utils.book_new();
+
+    if (type==='occupancy'||type==='combined') {
+      const rows=App.Service.Report.buildOccupancy(period,year,fromMonth,toMonth);
+      const sd=[['KMG Mining — Camp Allocation Occupancy Report'],[`Period: ${MN[fromMonth]} – ${MN[toMonth]} ${year}  |  Granularity: ${period.charAt(0).toUpperCase()+period.slice(1)}`],[`Generated: ${new Date().toLocaleDateString('en-AU')}`],[],['Period','Rooms Occupied','Total Available','Occupancy %',...ROOMS.map(r=>r.num)]];
+      rows.forEach(r=>{ sd.push([r.label,r.totalOccupied,r.totalPossible,r.pct/100,...ROOMS.map(rm=>r.roomBreakdown[rm.num]||0)]); });
+      if (rows.length>1) { const ds=6,de=5+rows.length; sd.push(['TOTAL / AVG',{f:`SUM(B${ds}:B${de})`},{f:`SUM(C${ds}:C${de})`},{f:`AVERAGE(D${ds}:D${de})`},...ROOMS.map((_,i)=>{const col=String.fromCharCode(69+i);return{f:`SUM(${col}${ds}:${col}${de})`};})]); }
+      const ws=XLSX.utils.aoa_to_sheet(sd);
+      ws['!cols']=[{wch:22},{wch:16},{wch:16},{wch:14},...ROOMS.map(()=>({wch:7}))];
+      for (let i=0;i<rows.length;i++) { const c=XLSX.utils.encode_cell({r:5+i,c:3}); if(ws[c]) ws[c].z='0%'; }
+      ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:4}}];
+      XLSX.utils.book_append_sheet(wb,ws,'Occupancy');
+    }
+
+    if (type==='company'||type==='combined') {
+      const rows=App.Service.Report.buildCompany(year,fromMonth,toMonth);
+      const totalRN=rows.reduce((s,r)=>s+r.roomNights,0)||1;
+      const sd=[['KMG Mining — Camp Allocation Company Report'],[`Period: ${MN[fromMonth]} – ${MN[toMonth]} ${year}`],[`Generated: ${new Date().toLocaleDateString('en-AU')}`],[],['Company','Total Bookings','Unique People','Unique Rooms','Room-Nights','% of Total Room-Nights']];
+      rows.forEach(r=>{ sd.push([r.company,r.bookings,r.uniquePeople,r.uniqueRooms,r.roomNights,r.roomNights/totalRN]); });
+      if (rows.length>1) { const ds=6,de=5+rows.length; sd.push(['TOTAL',{f:`SUM(B${ds}:B${de})`},{f:`SUM(C${ds}:C${de})`},{f:`SUM(D${ds}:D${de})`},{f:`SUM(E${ds}:E${de})`},1]); }
+      const ws=XLSX.utils.aoa_to_sheet(sd);
+      ws['!cols']=[{wch:28},{wch:16},{wch:16},{wch:14},{wch:14},{wch:22}];
+      for (let i=0;i<rows.length;i++) { const c=XLSX.utils.encode_cell({r:5+i,c:5}); if(ws[c]) ws[c].z='0.0%'; }
+      ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:5}}];
+      XLSX.utils.book_append_sheet(wb,ws,'Company Breakdown');
+    }
+
+    // All bookings sheet
+    {
+      const sd=[['KMG Mining — All Bookings'],[`Generated: ${new Date().toLocaleDateString('en-AU')}`],[],['Room','Occupant','Company','Role','Check In','Check Out','Roster','Clean','Repair Needed','Notes']];
+      [...App.Data.Store.bookings].sort((a,b)=>a.checkin.localeCompare(b.checkin)).forEach(b=>{
+        const room=App.Data.Store.rooms.find(r=>r.id===b.roomId);
+        sd.push([room?room.num:'?',b.name,b.company||'',b.role||'',b.checkin,b.checkout,b.rosterPattern||'',b.clean?'Yes':'No',b.repair?'Yes':'No',b.notes||'']);
+      });
+      const ws=XLSX.utils.aoa_to_sheet(sd);
+      ws['!cols']=[{wch:8},{wch:22},{wch:22},{wch:18},{wch:14},{wch:14},{wch:12},{wch:8},{wch:14},{wch:30}];
+      XLSX.utils.book_append_sheet(wb,ws,'All Bookings');
+    }
+
+    XLSX.writeFile(wb,`KMG_CampReport_${MN[fromMonth]}-${MN[toMonth]}-${year}.xlsx`);
+    App.UI.showToast('Excel report downloaded ✔');
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layer 5 — Auth
+// Password is sent once to POST /api/auth — worker validates and returns a
+// signed HMAC token. All subsequent requests carry only the token.
+// The password is NEVER stored in this file or in localStorage.
+// ─────────────────────────────────────────────────────────────────────────────
+App.Auth = {
+  getToken() {
+    return localStorage.getItem(App.Config.LS_TOKEN) || '';
+  },
+
+  isAuthenticated() {
+    try {
+      const stored = localStorage.getItem(App.Config.LS_TOKEN + '_exp');
+      if (!stored) return false;
+      return Date.now() < +stored;
+    } catch { return false; }
+  },
+
+  _saveToken(token) {
+    localStorage.setItem(App.Config.LS_TOKEN, token);
+    localStorage.setItem(App.Config.LS_TOKEN + '_exp', Date.now() + App.Config.SESSION_MS);
+  },
+
+  clearAuth() {
+    localStorage.removeItem(App.Config.LS_TOKEN);
+    localStorage.removeItem(App.Config.LS_TOKEN + '_exp');
+  },
+
+  async doLogin() {
+    const pass = document.getElementById('loginPassword').value;
+    const btn  = document.querySelector('.login-btn');
+    btn.textContent = 'Verifying...'; btn.disabled = true;
+
+    try {
+      const r = await fetch(`${App.Config.WORKER_URL}/api/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pass }),
+      });
+
+      if (!r.ok) {
+        throw new Error('wrong');
+      }
+
+      const { token } = await r.json();
+      this._saveToken(token);
+      document.getElementById('loginPassword').value = '';
+      document.getElementById('loginError').textContent = '';
+      await App.bootstrap();
+
+    } catch {
+      const card = document.querySelector('.login-card');
+      card.classList.remove('login-shake'); void card.offsetWidth; card.classList.add('login-shake');
+      document.getElementById('loginError').textContent = 'Incorrect password. Try again.';
+      document.getElementById('loginPassword').value = '';
+    } finally {
+      btn.textContent = 'Enter'; btn.disabled = false;
+    }
+  },
+
+  doLogout() {
+    this.clearAuth();
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+    setTimeout(() => document.getElementById('loginPassword').focus(), 100);
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Bootstrap
+// ─────────────────────────────────────────────────────────────────────────────
+App.bootstrap = async function() {
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('mainApp').style.display='block';
+  App.UI.showLoading('Connecting to database...');
+  try {
+    await App.Data.Store.load();
+  } catch(e) {
+    console.error('Data load error:', e);
+    App.UI.showToast('Could not load data: '+e.message, true);
+  }
+  App.UI.hideLoading();
+  App.UI.Calendar.render();
+  App.UI.updateStats();
+  App.UI.BookingForm.renderRoomPicker();
+  App.UI.BookingForm.renderList();
+  setInterval(App.UI.Nav.updateClock.bind(App.UI.Nav), 1000);
+  App.UI.Nav.updateClock();
+  App.UI.Reports.initYears();
+  // Auto-refresh every 3 min to pick up other users' changes
+  setInterval(async()=>{
+    try { await App.Data.Store.load(); App.UI.Calendar.render(); App.UI.updateStats(); App.UI.BookingForm.renderList(); }
+    catch(e) { console.warn('Auto-refresh failed:', e); }
+  }, 3*60*1000);
+};
+
+// Wire up form date listeners
+window.addEventListener('load', () => {
+  document.getElementById('f-checkin').addEventListener('change', ()=>{ App.UI.BookingForm.onRosterChange(); App.UI.BookingForm.renderRoomPicker(); });
+  document.getElementById('f-checkout').addEventListener('change', ()=>App.UI.BookingForm.renderRoomPicker());
+  window.addEventListener('resize', ()=>{ if(document.getElementById('page-overview').classList.contains('active')) App.UI.Calendar.render(); });
+
+  if (!App.Auth.isAuthenticated()) {
+    document.getElementById('loginScreen').style.display='flex';
+    setTimeout(()=>document.getElementById('loginPassword').focus(),100);
+  } else {
+    App.bootstrap();
+  }
+});
+</script>
+</body>
+</html>
