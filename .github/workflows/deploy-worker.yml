@@ -1,0 +1,35 @@
+# .github/workflows/deploy-worker.yml
+# Automatically deploys the Cloudflare Worker on every push to main
+
+name: 🚀 Deploy Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'   # only runs when backend files change
+  workflow_dispatch:    # allow manual trigger
+
+jobs:
+  deploy:
+    name: Deploy to Cloudflare Workers
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Deploy Worker
+        working-directory: backend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: wrangler deploy
