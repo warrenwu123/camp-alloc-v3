@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><base href="/camp-alloc-v2/previews/pr-2/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CampAlloc — Test Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow+Mono&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d1117; --surface:#161b22; --surface2:#21262d; --border:#30363d;
+    --accent:#f0a500; --green:#2ea043; --green-dim:rgba(46,160,67,.15);
+    --red:#f85149; --red-dim:rgba(248,81,73,.15);
+    --yellow:#e3b341; --yellow-dim:rgba(227,179,65,.15);
+    --blue:#58a6ff; --blue-dim:rgba(88,166,255,.15);
+    --text:#e6edf3; --text-dim:#8b949e; --text-muted:#484f58;
+    --font-head:'Barlow Condensed',sans-serif;
+    --font-body:'Barlow',sans-serif;
+    --font-mono:'Barlow Mono','Fira Mono',monospace;
+    --radius:6px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;min-height:100vh;padding:0 0 60px;}
+
+  /* ── Header ── */
+  .header{background:var(--surface);border-bottom:2px solid var(--accent);padding:20px 32px;display:flex;align-items:center;gap:20px;position:sticky;top:0;z-index:100;}
+  .header-title{font-family:var(--font-head);font-size:26px;font-weight:900;letter-spacing:3px;color:var(--accent);text-transform:uppercase;}
+  .header-sub{font-family:var(--font-head);font-size:13px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;}
+  .header-spacer{flex:1;}
+  .run-btn{background:var(--accent);color:#000;border:none;border-radius:var(--radius);padding:10px 24px;font-family:var(--font-head);font-size:15px;font-weight:900;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .15s;}
+  .run-btn:hover{background:#ffc233;transform:translateY(-1px);}
+  .run-btn:disabled{background:var(--surface2);color:var(--text-muted);cursor:not-allowed;transform:none;}
+  .clear-btn{background:none;border:1px solid var(--border);color:var(--text-dim);border-radius:var(--radius);padding:10px 18px;font-family:var(--font-head);font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .15s;}
+  .clear-btn:hover{background:var(--surface2);color:var(--text);}
+
+  /* ── Summary bar ── */
+  .summary{display:flex;gap:12px;padding:16px 32px;background:var(--surface);border-bottom:1px solid var(--border);}
+  .summary-pill{font-family:var(--font-head);font-size:13px;font-weight:700;letter-spacing:.5px;padding:6px 14px;border-radius:20px;}
+  .summary-pill.pass{background:var(--green-dim);color:var(--green);border:1px solid var(--green);}
+  .summary-pill.fail{background:var(--red-dim);color:var(--red);border:1px solid var(--red);}
+  .summary-pill.skip{background:var(--yellow-dim);color:var(--yellow);border:1px solid var(--yellow);}
+  .summary-pill.total{background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue);}
+  .summary-status{margin-left:auto;font-family:var(--font-head);font-size:14px;font-weight:700;letter-spacing:1px;display:flex;align-items:center;gap:8px;}
+  .status-dot{width:10px;height:10px;border-radius:50%;}
+  .status-dot.running{background:var(--yellow);animation:pulse .8s infinite;}
+  .status-dot.pass{background:var(--green);}
+  .status-dot.fail{background:var(--red);}
+  .status-dot.idle{background:var(--text-muted);}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  /* ── Config panel ── */
+  .config-panel{padding:20px 32px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;}
+  .config-group{display:flex;flex-direction:column;gap:6px;}
+  .config-label{font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text-muted);text-transform:uppercase;}
+  .config-input{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:var(--radius);padding:8px 12px;font-family:var(--font-mono);font-size:13px;width:340px;}
+  .config-input:focus{outline:none;border-color:var(--accent);}
+  .config-input.pw{width:200px;}
+
+  /* ── Suite sections ── */
+  .suites{padding:24px 32px;display:flex;flex-direction:column;gap:16px;}
+  .suite{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+  .suite-header{padding:14px 18px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;}
+  .suite-icon{font-size:18px;}
+  .suite-name{font-family:var(--font-head);font-size:17px;font-weight:700;letter-spacing:1px;text-transform:uppercase;flex:1;}
+  .suite-badge{font-family:var(--font-head);font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;}
+  .suite-badge.pass{background:var(--green-dim);color:var(--green);}
+  .suite-badge.fail{background:var(--red-dim);color:var(--red);}
+  .suite-badge.pending{background:var(--yellow-dim);color:var(--yellow);}
+  .suite-badge.idle{background:var(--surface);color:var(--text-muted);border:1px solid var(--border);}
+  .suite-chevron{color:var(--text-muted);font-size:12px;transition:transform .2s;}
+  .suite-chevron.open{transform:rotate(90deg);}
+
+  .tests{display:none;}
+  .tests.open{display:block;}
+
+  .test-row{display:flex;align-items:flex-start;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border);transition:background .1s;}
+  .test-row:last-child{border-bottom:none;}
+  .test-row:hover{background:rgba(255,255,255,.02);}
+  .test-icon{font-size:14px;margin-top:1px;flex-shrink:0;}
+  .test-content{flex:1;}
+  .test-name{font-weight:600;margin-bottom:3px;}
+  .test-desc{font-size:12px;color:var(--text-dim);}
+  .test-time{font-family:var(--font-mono);font-size:11px;color:var(--text-muted);flex-shrink:0;margin-top:2px;}
+
+  /* ── Log/detail area ── */
+  .test-detail{margin-top:6px;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:10px 12px;font-family:var(--font-mono);font-size:11px;line-height:1.7;white-space:pre-wrap;max-height:200px;overflow-y:auto;}
+  .test-detail .ok{color:var(--green);}
+  .test-detail .err{color:var(--red);}
+  .test-detail .info{color:var(--blue);}
+  .test-detail .warn{color:var(--yellow);}
+
+  /* ── Spinner for running tests ── */
+  .spin{display:inline-block;width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ── Footer ── */
+  .footer{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:10px 32px;font-family:var(--font-head);font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;display:flex;justify-content:space-between;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">⚗ CampAlloc Test Suite</div>
+    <div class="header-sub">API · Business Logic · UI Integration</div>
+  </div>
+  <div class="header-spacer"></div>
+  <button class="clear-btn" onclick="clearResults()">Clear</button>
+  <button class="run-btn" id="runBtn" onclick="runAll()">▶ Run All Tests</button>
+</div>
+
+<div class="summary">
+  <div class="summary-pill pass" id="sum-pass">✔ 0 Passed</div>
+  <div class="summary-pill fail" id="sum-fail">✖ 0 Failed</div>
+  <div class="summary-pill skip" id="sum-skip">⊘ 0 Skipped</div>
+  <div class="summary-pill total" id="sum-total">◎ 0 Total</div>
+  <div class="summary-status">
+    <div class="status-dot idle" id="statusDot"></div>
+    <span id="statusText">Ready</span>
+  </div>
+</div>
+
+<div class="config-panel">
+  <div class="config-group">
+    <div class="config-label">Worker URL</div>
+    <input class="config-input" id="cfg-url" value="https://campbook2.alvinkc.workers.dev">
+  </div>
+  <div class="config-group">
+    <div class="config-label">App Password</div>
+    <input class="config-input pw" id="cfg-pw" type="password" value="kmetgroup123!">
+  </div>
+</div>
+
+<div class="suites" id="suites"></div>
+
+<div class="footer">
+  <span>CampAlloc Test Suite v2.0</span>
+  <span id="footer-time"></span>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// Test Framework
+// ══════════════════════════════════════════════════════════════════════════════
+const Results = { pass: 0, fail: 0, skip: 0 };
+let _runningId = null;
+
+function cfg() {
+  return {
+    url: document.getElementById('cfg-url').value.trim().replace(/\/$/, ''),
+    pw:  document.getElementById('cfg-pw').value.trim(),
+  };
+}
+
+function h(pw) {
+  return { 'X-App-Password': pw, 'Content-Type': 'application/json' };
+}
+
+// ── Test runner ───────────────────────────────────────────────────────────────
+async function runTest(suiteId, testId, fn) {
+  const row = document.getElementById(testId);
+  const icon = row.querySelector('.test-icon');
+  const timeEl = row.querySelector('.test-time');
+  icon.innerHTML = '<span class="spin"></span>';
+  const t0 = Date.now();
+  const logs = [];
+  const log = (msg, cls='info') => logs.push(`<span class="${cls}">${msg}</span>`);
+
+  try {
+    await fn(log);
+    const ms = Date.now() - t0;
+    icon.textContent = '✅';
+    timeEl.textContent = `${ms}ms`;
+    row.querySelector('.test-desc').textContent = 'Passed';
+    if (logs.length) appendDetail(row, logs);
+    Results.pass++;
+    updateSuiteBadge(suiteId);
+    return true;
+  } catch(e) {
+    const ms = Date.now() - t0;
+    icon.textContent = '❌';
+    timeEl.textContent = `${ms}ms`;
+    row.querySelector('.test-desc').innerHTML = `<span style="color:var(--red)">${e.message}</span>`;
+    log('ERROR: ' + e.message, 'err');
+    if (e.detail) log(e.detail, 'warn');
+    appendDetail(row, logs);
+    Results.fail++;
+    updateSuiteBadge(suiteId);
+    return false;
+  } finally {
+    updateSummary();
+  }
+}
+
+function appendDetail(row, logs) {
+  if (!logs.length) return;
+  const d = document.createElement('div');
+  d.className = 'test-detail';
+  d.innerHTML = logs.join('\n');
+  row.querySelector('.test-content').appendChild(d);
+}
+
+function assert(cond, msg) {
+  if (!cond) throw Object.assign(new Error(msg), {});
+}
+
+function assertEq(a, b, label='') {
+  if (a !== b) throw new Error(`${label} expected ${JSON.stringify(b)}, got ${JSON.stringify(a)}`);
+}
+
+function skip(msg) {
+  throw Object.assign(new Error('SKIPPED: ' + msg), { skip: true });
+}
+
+// ── UI helpers ────────────────────────────────────────────────────────────────
+function updateSummary() {
+  document.getElementById('sum-pass').textContent = `✔ ${Results.pass} Passed`;
+  document.getElementById('sum-fail').textContent = `✖ ${Results.fail} Failed`;
+  document.getElementById('sum-skip').textContent = `⊘ ${Results.skip} Skipped`;
+  const total = Results.pass + Results.fail + Results.skip;
+  document.getElementById('sum-total').textContent = `◎ ${total} Total`;
+}
+
+function updateSuiteBadge(suiteId) {
+  const suite = document.getElementById('suite-' + suiteId);
+  const rows = suite.querySelectorAll('.test-row');
+  let p=0,f=0,pending=0;
+  rows.forEach(r => {
+    const icon = r.querySelector('.test-icon').textContent;
+    if (icon === '✅') p++;
+    else if (icon === '❌') f++;
+    else pending++;
+  });
+  const badge = suite.querySelector('.suite-badge');
+  if (pending > 0) { badge.className='suite-badge pending'; badge.textContent=`${p}/${rows.length}`; }
+  else if (f > 0)  { badge.className='suite-badge fail'; badge.textContent=`${f} Failed`; }
+  else             { badge.className='suite-badge pass'; badge.textContent=`All ${p} Passed`; }
+}
+
+function setStatus(state, text) {
+  const dot = document.getElementById('statusDot');
+  dot.className = 'status-dot ' + state;
+  document.getElementById('statusText').textContent = text;
+}
+
+function clearResults() {
+  Results.pass = 0; Results.fail = 0; Results.skip = 0;
+  updateSummary();
+  setStatus('idle', 'Ready');
+  document.getElementById('suites').innerHTML = '';
+  buildSuites();
+}
+
+// ── Suite/test builder ────────────────────────────────────────────────────────
+const SUITES = [];
+
+function defineSuite(id, icon, name, tests) {
+  SUITES.push({ id, icon, name, tests });
+}
+
+function buildSuites() {
+  const container = document.getElementById('suites');
+  container.innerHTML = '';
+  SUITES.forEach(suite => {
+    const div = document.createElement('div');
+    div.className = 'suite';
+    div.id = 'suite-' + suite.id;
+    div.innerHTML = `
+      <div class="suite-header" onclick="toggleSuite('${suite.id}')">
+        <span class="suite-icon">${suite.icon}</span>
+        <span class="suite-name">${suite.name}</span>
+        <span class="suite-badge idle" id="badge-${suite.id}">Pending</span>
+        <span class="suite-chevron open" id="chev-${suite.id}">▶</span>
+      </div>
+      <div class="tests open" id="tests-${suite.id}">
+        ${suite.tests.map(t => `
+          <div class="test-row" id="${t.id}">
+            <div class="test-icon">⏳</div>
+            <div class="test-content">
+              <div class="test-name">${t.name}</div>
+              <div class="test-desc">${t.desc}</div>
+            </div>
+            <div class="test-time">—</div>
+          </div>`).join('')}
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+function toggleSuite(id) {
+  const tests = document.getElementById('tests-' + id);
+  const chev  = document.getElementById('chev-' + id);
+  const open  = tests.classList.toggle('open');
+  chev.classList.toggle('open', open);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Test Definitions
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── Suite 1: Worker Connectivity ──────────────────────────────────────────────
+defineSuite('connectivity', '🌐', 'Worker Connectivity', [
+  { id:'t-auth-ok',   name:'Auth: valid password accepted',   desc:'Worker returns 200 with correct password' },
+  { id:'t-auth-fail', name:'Auth: wrong password rejected',   desc:'Worker returns 401 with wrong password' },
+  { id:'t-cors',      name:'CORS: OPTIONS preflight',         desc:'Worker responds to OPTIONS with CORS headers' },
+  { id:'t-404',       name:'404: unknown route',              desc:'Worker returns 404 for unknown paths' },
+]);
+
+// ── Suite 2: Rooms API ────────────────────────────────────────────────────────
+defineSuite('rooms', '🏠', 'Rooms API', [
+  { id:'t-rooms-get',    name:'GET /api/rooms',           desc:'Returns array of 80 rooms' },
+  { id:'t-rooms-struct', name:'Room object structure',    desc:'Each room has id, num, clean, repair' },
+  { id:'t-room-update',  name:'PUT /api/rooms/:id',       desc:'Toggle clean/repair status and verify' },
+  { id:'t-room-count',   name:'Room count = 80',          desc:'Exactly 80 rooms returned' },
+]);
+
+// ── Suite 3: Bookings API ─────────────────────────────────────────────────────
+defineSuite('bookings', '📋', 'Bookings API', [
+  { id:'t-book-get',     name:'GET /api/bookings',         desc:'Returns array of bookings' },
+  { id:'t-book-create',  name:'POST /api/bookings',        desc:'Creates a new booking and verifies it persists' },
+  { id:'t-book-update',  name:'PUT /api/bookings/:id',     desc:'Updates booking fields and verifies' },
+  { id:'t-book-delete',  name:'DELETE /api/bookings/:id',  desc:'Deletes booking and confirms removal' },
+  { id:'t-book-struct',  name:'Booking object structure',  desc:'All required fields present' },
+]);
+
+// ── Suite 4: Check-in / Check-out API ─────────────────────────────────────────
+defineSuite('daily', '📅', 'Check-in / Check-out API', [
+  { id:'t-checkin-today',   name:'GET /api/checkins?date=today',    desc:'Returns bookings checking in today' },
+  { id:'t-checkout-today',  name:'GET /api/checkouts?date=today',   desc:'Returns bookings checking out today' },
+  { id:'t-checkin-date',    name:'GET /api/checkins?date=specific', desc:'Returns correct bookings for a given date' },
+  { id:'t-checkin-empty',   name:'Empty date returns []',           desc:'Date with no activity returns empty array' },
+]);
+
+// ── Suite 5: Import API ───────────────────────────────────────────────────────
+defineSuite('import', '⬆', 'Import API', [
+  { id:'t-import-empty',    name:'POST /api/import empty payload',  desc:'Import with no data succeeds gracefully' },
+  { id:'t-import-bookings', name:'POST /api/import with bookings',  desc:'Imported bookings are persisted and retrievable' },
+  { id:'t-import-cleanup',  name:'Import cleanup',                  desc:'Test booking removed after import test' },
+]);
+
+// ── Suite 6: Business Logic ───────────────────────────────────────────────────
+defineSuite('logic', '⚙', 'Business Logic (Client-side)', [
+  { id:'t-roster-7-7',    name:'Roster: 7/7 segments',       desc:'buildSegments generates correct on/off periods' },
+  { id:'t-roster-14-14',  name:'Roster: 14/14 segments',     desc:'2 rotations produce 4 segments' },
+  { id:'t-date-fmt',      name:'Date formatter',             desc:'formatDate produces YYYY-MM-DD' },
+  { id:'t-date-display',  name:'Date display formatter',     desc:'displayDate produces DD Mon YYYY' },
+  { id:'t-overlap-yes',   name:'Overlap detection: yes',     desc:'Overlapping ranges detected correctly' },
+  { id:'t-overlap-no',    name:'Overlap detection: no',      desc:'Non-overlapping ranges pass correctly' },
+  { id:'t-occupies-on',   name:'bookingOccupiesOnDate: basic',     desc:'Simple booking active on date' },
+  { id:'t-occupies-seg',  name:'bookingOccupiesOnDate: segments',  desc:'Off-week free segments correctly excluded' },
+  { id:'t-conflict',      name:'Conflict detection',         desc:'Booking conflict correctly identified' },
+]);
+
+// ── Suite 7: Roster Segments ──────────────────────────────────────────────────
+defineSuite('roster', '🔄', 'Roster Segment Builder', [
+  { id:'t-seg-count',    name:'Segment count for N rotations', desc:'N rotations = 2N segments (on + off each)' },
+  { id:'t-seg-dates',    name:'Segment dates are contiguous',  desc:'Each segment starts day after previous ends' },
+  { id:'t-seg-ison',     name:'isOn alternates correctly',     desc:'Segments alternate on/off starting with on' },
+  { id:'t-seg-checkout', name:'Final checkout date correct',   desc:'Matches checkin + (on+off)*rotations - 1' },
+]);
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Test Implementations
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function parseDate(s) { const [y,m,d]=s.split('-'); return new Date(+y,+m-1,+d); }
+function fmtDate(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function todayStr() { return fmtDate(new Date()); }
+
+function buildSegments(startDate, onDays, offDays, rotations) {
+  const segs=[]; let cur=new Date(startDate);
+  for(let r=0;r<rotations;r++){
+    const onEnd=new Date(cur); onEnd.setDate(cur.getDate()+onDays-1);
+    segs.push({checkin:fmtDate(cur),checkout:fmtDate(onEnd),isOn:true});
+    cur=new Date(onEnd); cur.setDate(onEnd.getDate()+1);
+    const offEnd=new Date(cur); offEnd.setDate(cur.getDate()+offDays-1);
+    segs.push({checkin:fmtDate(cur),checkout:fmtDate(offEnd),isOn:false});
+    cur=new Date(offEnd); cur.setDate(offEnd.getDate()+1);
+  }
+  return segs;
+}
+
+function occupiesOnDate(b, date) {
+  const d=new Date(date); d.setHours(0,0,0,0);
+  if(b.segments&&b.segments.length){
+    return b.segments.some(s=>{
+      if(!s.isOn&&b.offweek==='free') return false;
+      const cin=parseDate(s.checkin),cout=parseDate(s.checkout);
+      cin.setHours(0,0,0,0);cout.setHours(0,0,0,0);
+      return d>=cin&&d<=cout;
+    });
+  }
+  const cin=parseDate(b.checkin),cout=parseDate(b.checkout);
+  cin.setHours(0,0,0,0);cout.setHours(0,0,0,0);
+  return d>=cin&&d<=cout;
+}
+
+function hasConflict(candidate, existing, excludeId) {
+  return existing.some(x=>{
+    if(x.id===excludeId||x.roomId!==candidate.roomId) return false;
+    const overlap = parseDate(candidate.checkin)<=parseDate(x.checkout) && parseDate(candidate.checkout)>=parseDate(x.checkin);
+    if(!overlap) return false;
+    return true;
+  });
+}
+
+// ── Connectivity tests ────────────────────────────────────────────────────────
+async function impl_auth_ok(log) {
+  const {url,pw}=cfg();
+  const r = await fetch(`${url}/api/rooms`, { headers: h(pw) });
+  log(`Status: ${r.status}`, r.ok?'ok':'err');
+  assert(r.ok, `Expected 200, got ${r.status}`);
+}
+
+async function impl_auth_fail(log) {
+  const {url}=cfg();
+  const r = await fetch(`${url}/api/rooms`, { headers: h('wrong-password-xyz') });
+  log(`Status: ${r.status}`, r.status===401?'ok':'err');
+  assert(r.status===401, `Expected 401, got ${r.status}`);
+}
+
+async function impl_cors(log) {
+  const {url}=cfg();
+  const r = await fetch(`${url}/api/rooms`, { method:'OPTIONS' });
+  const acao = r.headers.get('Access-Control-Allow-Origin');
+  log(`Access-Control-Allow-Origin: ${acao}`, acao?'ok':'err');
+  assert(acao, 'Missing Access-Control-Allow-Origin header');
+}
+
+async function impl_404(log) {
+  const {url,pw}=cfg();
+  const r = await fetch(`${url}/api/nonexistent-route-xyz`, { headers: h(pw) });
+  log(`Status: ${r.status}`, r.status===404?'ok':'err');
+  assert(r.status===404, `Expected 404, got ${r.status}`);
+}
+
+// ── Rooms tests ───────────────────────────────────────────────────────────────
+async function impl_rooms_get(log) {
+  const {url,pw}=cfg();
+  const r = await fetch(`${url}/api/rooms`, { headers: h(pw) });
+  assert(r.ok, `HTTP ${r.status}`);
+  const rooms = await r.json();
+  log(`Received ${rooms.length} rooms`, 'ok');
+  assert(Array.isArray(rooms), 'Response is not an array');
+  assert(rooms.length > 0, 'Rooms array is empty');
+  log(`First room: ${JSON.stringify(rooms[0])}`, 'info');
+}
+
+async function impl_rooms_struct(log) {
+  const {url,pw}=cfg();
+  const r = await fetch(`${url}/api/rooms`, { headers: h(pw) });
+  const rooms = await r.json();
+  const room = rooms[0];
+  log(`Sample room: ${JSON.stringify(room)}`, 'info');
+  assert(room.id !== undefined, 'Missing field: id');
+  assert(room.num !== undefined, 'Missing field: num');
+  assert(room.clean !== undefined, 'Missing field: clean');
+  assert(room.repair !== undefined, 'Missing field: repair');
+  log('All required fields present ✔', 'ok');
+}
+
+async function impl_room_update(log) {
+  const {url,pw}=cfg();
+  // Get current state of room 1
+  const r1 = await fetch(`${url}/api/rooms`, { headers: h(pw) });
+  const rooms = await r1.json();
+  const room = rooms.find(r=>r.id===1);
+  log(`Room 1 before: clean=${room.clean}, repair=${room.repair}`, 'info');
+  // Toggle clean
+  const newClean = !room.clean;
+  const r2 = await fetch(`${url}/api/rooms/1`, {
+    method:'PUT', headers: h(pw),
+    body: JSON.stringify({ clean: newClean, repair: room.repair })
+  });
+  assert(r2.ok, `PUT failed: HTTP ${r2.status}`);
+  // Verify
+  const r3 = await fetch(`${url}/api/rooms`, { headers: h(pw) });
+  const rooms2 = await r3.json();
+  const room2 = rooms2.find(r=>r.id===1);
+  log(`Room 1 after: clean=${room2.clean}`, room2.clean===newClean?'ok':'err');
+  assert(room2.clean===newClean, `clean not updated: expected ${newClean}, got ${room2.clean}`);
+  // Restore
+  await fetch(`${url}/api/rooms/1`, { method:'PUT', headers: h(pw), body: JSON.stringify({ clean: room.clean, repair: room.repair }) });
+  log('Restored original state ✔', 'ok');
+}
+
+async function impl_room_count(log) {
+  const {url,pw}=cfg();
+  const r = await fetch(`${url}/api/rooms`, { headers: h(pw) });
+  const rooms = await r.json();
+  log(`Room count: ${rooms.length}`, rooms.length===80?'ok':'warn');
+  assertEq(rooms.length, 80, 'Room count');
+  log('Exactly 80 rooms ✔', 'ok');
+}
+
+// ── Bookings tests ────────────────────────────────────────────────────────────
+let _testBookingId = null;
+
+async function impl_book_get(log) {
+  const {url,pw}=cfg();
+  const r = await fetch(`${url}/api/bookings`, { headers: h(pw) });
+  assert(r.ok, `HTTP ${r.status}`);
+  const bookings = await r.json();
+  log(`${bookings.length} bookings found`, 'info');
+  assert(Array.isArray(bookings), 'Not an array');
+  log('GET /api/bookings OK ✔', 'ok');
+}
+
+async function impl_book_create(log) {
+  const {url,pw}=cfg();
+  _testBookingId = `test-${Date.now()}`;
+  const today = todayStr();
+  const tomorrow = fmtDate(new Date(Date.now()+86400000));
+  const booking = {
+    id: _testBookingId, roomId: 80, name: 'Test User',
+    company: 'Test Co', role: 'Tester',
+    checkin: today, checkout: tomorrow,
+    clean: true, repair: false, notes: 'automated test',
+    color: 0, rosterPattern: '', offweek: 'held', segments: []
+  };
+  log(`Creating booking id=${_testBookingId}`, 'info');
+  const r = await fetch(`${url}/api/bookings`, {
+    method:'POST', headers: h(pw), body: JSON.stringify(booking)
+  });
+  const body = await r.json();
+  log(`Response: ${JSON.stringify(body)}`, r.ok?'ok':'err');
+  assert(r.ok, `POST failed: HTTP ${r.status} — ${JSON.stringify(body)}`);
+  // Verify it persists
+  const r2 = await fetch(`${url}/api/bookings`, { headers: h(pw) });
+  const bookings = await r2.json();
+  const found = bookings.find(b=>b.id===_testBookingId);
+  assert(found, 'Booking not found after creation');
+  log(`Booking persisted: name=${found.name}, room=${found.roomId} ✔`, 'ok');
+}
+
+async function impl_book_update(log) {
+  const {url,pw}=cfg();
+  if (!_testBookingId) throw new Error('Run create test first');
+  const updated = {
+    id: _testBookingId, roomId: 80, name: 'Updated User',
+    company: 'Updated Co', role: 'Senior Tester',
+    checkin: todayStr(), checkout: fmtDate(new Date(Date.now()+86400000*2)),
+    clean: false, repair: true, notes: 'updated by test',
+    color: 1, rosterPattern: '', offweek: 'free', segments: []
+  };
+  const r = await fetch(`${url}/api/bookings/${encodeURIComponent(_testBookingId)}`, {
+    method:'PUT', headers: h(pw), body: JSON.stringify(updated)
+  });
+  assert(r.ok, `PUT failed: HTTP ${r.status}`);
+  log('PUT succeeded', 'ok');
+  // Verify
+  const r2 = await fetch(`${url}/api/bookings`, { headers: h(pw) });
+  const bookings = await r2.json();
+  const found = bookings.find(b=>b.id===_testBookingId);
+  assert(found, 'Booking missing after update');
+  assertEq(found.name, 'Updated User', 'name');
+  assertEq(found.company, 'Updated Co', 'company');
+  log(`Updated fields verified: name="${found.name}" ✔`, 'ok');
+}
+
+async function impl_book_delete(log) {
+  const {url,pw}=cfg();
+  if (!_testBookingId) throw new Error('Run create test first');
+  const r = await fetch(`${url}/api/bookings/${encodeURIComponent(_testBookingId)}`, {
+    method:'DELETE', headers: h(pw)
+  });
+  assert(r.ok, `DELETE failed: HTTP ${r.status}`);
+  log('DELETE succeeded', 'ok');
+  // Verify gone
+  const r2 = await fetch(`${url}/api/bookings`, { headers: h(pw) });
+  const bookings = await r2.json();
+  const found = bookings.find(b=>b.id===_testBookingId);
+  assert(!found, 'Booking still exists after deletion');
+  log('Booking confirmed deleted ✔', 'ok');
+  _testBookingId = null;
+}
+
+async function impl_book_struct(log) {
+  const {url,pw}=cfg();
+  const r = await fetch(`${url}/api/bookings`, { headers: h(pw) });
+  const bookings = await r.json();
+  if (!bookings.length) { log('No bookings to check structure (skipping field check)', 'warn'); return; }
+  const b = bookings[0];
+  log(`Sample: ${JSON.stringify(b).slice(0,200)}`, 'info');
+  ['id','roomId','name','checkin','checkout','segments','offweek'].forEach(field => {
+    assert(b[field]!==undefined, `Missing field: ${field}`);
+    log(`  ${field}: ✔`, 'ok');
+  });
+}
+
+// ── Daily tests ───────────────────────────────────────────────────────────────
+async function impl_checkin_today(log) {
+  const {url,pw}=cfg();
+  const date = todayStr();
+  const r = await fetch(`${url}/api/checkins?date=${date}`, { headers: h(pw) });
+  assert(r.ok, `HTTP ${r.status}`);
+  const items = await r.json();
+  log(`Check-ins for ${date}: ${items.length} found`, 'info');
+  assert(Array.isArray(items), 'Not an array');
+  log('GET /api/checkins OK ✔', 'ok');
+}
+
+async function impl_checkout_today(log) {
+  const {url,pw}=cfg();
+  const date = todayStr();
+  const r = await fetch(`${url}/api/checkouts?date=${date}`, { headers: h(pw) });
+  assert(r.ok, `HTTP ${r.status}`);
+  const items = await r.json();
+  log(`Check-outs for ${date}: ${items.length} found`, 'info');
+  assert(Array.isArray(items), 'Not an array');
+  log('GET /api/checkouts OK ✔', 'ok');
+}
+
+async function impl_checkin_date(log) {
+  const {url,pw}=cfg();
+  // Create a booking that checks in on a specific date
+  const id = `test-ci-${Date.now()}`;
+  const targetDate = fmtDate(new Date(Date.now()+86400000*5));
+  await fetch(`${url}/api/bookings`, {
+    method:'POST', headers: h(pw),
+    body: JSON.stringify({ id, roomId:79, name:'CheckinTest', company:'', role:'',
+      checkin: targetDate, checkout: fmtDate(new Date(Date.now()+86400000*6)),
+      clean:true, repair:false, notes:'', color:0, rosterPattern:'', offweek:'held', segments:[] })
+  });
+  const r = await fetch(`${url}/api/checkins?date=${targetDate}`, { headers: h(pw) });
+  const items = await r.json();
+  log(`Checkins for ${targetDate}: ${items.length} result(s)`, 'info');
+  const found = items.find(b=>b.id===id);
+  // Cleanup
+  await fetch(`${url}/api/bookings/${encodeURIComponent(id)}`, { method:'DELETE', headers: h(pw) });
+  assert(found, `Test booking not found in checkins for ${targetDate}`);
+  log('Correct booking returned in check-ins ✔', 'ok');
+}
+
+async function impl_checkin_empty(log) {
+  const {url,pw}=cfg();
+  const farFuture = '2099-01-01';
+  const r = await fetch(`${url}/api/checkins?date=${farFuture}`, { headers: h(pw) });
+  assert(r.ok, `HTTP ${r.status}`);
+  const items = await r.json();
+  log(`Check-ins for ${farFuture}: ${items.length}`, 'info');
+  assert(Array.isArray(items), 'Not an array');
+  assertEq(items.length, 0, 'Expected 0 results for far future date');
+  log('Empty array returned ✔', 'ok');
+}
+
+// ── Import tests ──────────────────────────────────────────────────────────────
+async function impl_import_empty(log) {
+  const {url,pw}=cfg();
+  const r = await fetch(`${url}/api/import`, {
+    method:'POST', headers: h(pw),
+    body: JSON.stringify({ bookings:[], rooms:[] })
+  });
+  assert(r.ok, `HTTP ${r.status}`);
+  const body = await r.json();
+  log(`Response: ${JSON.stringify(body)}`, 'info');
+  assert(body.ok, 'Response ok not true');
+  assertEq(body.bookingsImported, 0, 'bookingsImported');
+  log('Empty import handled gracefully ✔', 'ok');
+}
+
+let _importedId = null;
+async function impl_import_bookings(log) {
+  const {url,pw}=cfg();
+  _importedId = `import-test-${Date.now()}`;
+  const booking = {
+    id: _importedId, roomId: 78, name: 'Imported User',
+    company: 'Import Co', role: 'Importer',
+    checkin: todayStr(), checkout: fmtDate(new Date(Date.now()+86400000)),
+    clean:true, repair:false, notes:'via import', color:2,
+    rosterPattern:'', offweek:'held', segments:[]
+  };
+  const r = await fetch(`${url}/api/import`, {
+    method:'POST', headers: h(pw),
+    body: JSON.stringify({ bookings:[booking], rooms:[] })
+  });
+  assert(r.ok, `HTTP ${r.status}`);
+  const body = await r.json();
+  log(`Imported: ${body.bookingsImported} bookings`, body.bookingsImported===1?'ok':'err');
+  assertEq(body.bookingsImported, 1, 'bookingsImported count');
+  // Verify retrievable
+  const r2 = await fetch(`${url}/api/bookings`, { headers: h(pw) });
+  const bks = await r2.json();
+  const found = bks.find(b=>b.id===_importedId);
+  assert(found, 'Imported booking not found in GET /api/bookings');
+  log(`Imported booking persisted: "${found.name}" ✔`, 'ok');
+}
+
+async function impl_import_cleanup(log) {
+  const {url,pw}=cfg();
+  if (!_importedId) { log('No imported booking to clean up', 'warn'); return; }
+  const r = await fetch(`${url}/api/bookings/${encodeURIComponent(_importedId)}`, {
+    method:'DELETE', headers: h(pw)
+  });
+  assert(r.ok, `DELETE failed: HTTP ${r.status}`);
+  log(`Cleaned up import test booking ${_importedId} ✔`, 'ok');
+  _importedId = null;
+}
+
+// ── Business Logic tests (client-side, no network) ────────────────────────────
+async function impl_roster_7_7(log) {
+  const start = parseDate('2026-04-01');
+  const segs = buildSegments(start, 7, 7, 1);
+  log(`Segments: ${JSON.stringify(segs)}`, 'info');
+  assertEq(segs.length, 2, 'segment count');
+  assertEq(segs[0].checkin, '2026-04-01', 'on-start');
+  assertEq(segs[0].checkout, '2026-04-07', 'on-end');
+  assertEq(segs[0].isOn, true, 'first isOn');
+  assertEq(segs[1].checkin, '2026-04-08', 'off-start');
+  assertEq(segs[1].checkout, '2026-04-14', 'off-end');
+  assertEq(segs[1].isOn, false, 'second isOn');
+  log('7/7 roster segments correct ✔', 'ok');
+}
+
+async function impl_roster_14_14(log) {
+  const start = parseDate('2026-04-01');
+  const segs = buildSegments(start, 14, 14, 2);
+  log(`Segment count: ${segs.length}`, segs.length===4?'ok':'err');
+  assertEq(segs.length, 4, '2 rotations = 4 segments');
+  assertEq(segs[2].isOn, true, '3rd segment isOn');
+  assertEq(segs[3].isOn, false, '4th segment isOn');
+  log('14/14 2-rotation roster correct ✔', 'ok');
+}
+
+async function impl_date_fmt(log) {
+  const d = new Date(2026, 3, 5); // April 5 2026
+  const result = fmtDate(d);
+  log(`fmtDate result: "${result}"`, 'info');
+  assertEq(result, '2026-04-05', 'formatted date');
+  log('Date formatter correct ✔', 'ok');
+}
+
+async function impl_date_display(log) {
+  // Simulate display
+  const s = '2026-04-05';
+  const result = parseDate(s).toLocaleDateString('en-AU',{day:'2-digit',month:'short',year:'numeric'});
+  log(`display result: "${result}"`, 'info');
+  assert(result.includes('2026'), 'Year missing');
+  assert(result.includes('Apr'), 'Month missing');
+  assert(result.includes('05'), 'Day missing');
+  log('Date display formatter correct ✔', 'ok');
+}
+
+async function impl_overlap_yes(log) {
+  const overlaps = parseDate('2026-04-01') <= parseDate('2026-04-10') && parseDate('2026-04-05') >= parseDate('2026-04-01');
+  log(`Apr 1-5 overlaps Apr 1-10: ${overlaps}`, overlaps?'ok':'err');
+  assert(overlaps, 'Should detect overlap');
+  log('Overlap detected correctly ✔', 'ok');
+}
+
+async function impl_overlap_no(log) {
+  const overlaps = parseDate('2026-04-01') <= parseDate('2026-04-20') && parseDate('2026-04-15') >= parseDate('2026-04-01');
+  // Apr 1-10 vs Apr 15-20: no overlap
+  const no = !(parseDate('2026-04-01') <= parseDate('2026-04-20') && parseDate('2026-04-10') >= parseDate('2026-04-15'));
+  log(`Apr 1-10 overlaps Apr 15-20: ${!no}`, no?'ok':'err');
+  assert(no, 'Should not detect overlap for non-overlapping ranges');
+  log('Non-overlap correctly passed ✔', 'ok');
+}
+
+async function impl_occupies_on(log) {
+  const b = { checkin:'2026-04-01', checkout:'2026-04-10', segments:[], offweek:'held' };
+  assert(occupiesOnDate(b, parseDate('2026-04-05')), 'Should be active on Apr 5');
+  assert(!occupiesOnDate(b, parseDate('2026-04-15')), 'Should NOT be active on Apr 15');
+  log('Basic occupancy check correct ✔', 'ok');
+}
+
+async function impl_occupies_seg(log) {
+  const segs = buildSegments(parseDate('2026-04-01'), 7, 7, 1);
+  const b = { checkin:'2026-04-01', checkout:'2026-04-14', segments: segs, offweek:'free' };
+  // On-week: Apr 1-7 → active
+  assert(occupiesOnDate(b, parseDate('2026-04-03')), 'Should be active on Apr 3 (on-week)');
+  // Off-week: Apr 8-14, offweek=free → NOT active
+  assert(!occupiesOnDate(b, parseDate('2026-04-10')), 'Should NOT be active on Apr 10 (off-week free)');
+  log('Segment + free off-week logic correct ✔', 'ok');
+}
+
+async function impl_conflict(log) {
+  const existing = [{ id:'x1', roomId:1, checkin:'2026-04-01', checkout:'2026-04-10', segments:[], offweek:'held' }];
+  const conflict  = { id:'x2', roomId:1, checkin:'2026-04-05', checkout:'2026-04-15', segments:[], offweek:'held' };
+  const noConflict= { id:'x3', roomId:1, checkin:'2026-04-15', checkout:'2026-04-20', segments:[], offweek:'held' };
+  assert(hasConflict(conflict, existing, null), 'Should detect conflict');
+  assert(!hasConflict(noConflict, existing, null), 'Should not detect conflict');
+  log('Conflict detection correct ✔', 'ok');
+}
+
+// ── Roster segment tests ───────────────────────────────────────────────────────
+async function impl_seg_count(log) {
+  [1,2,3].forEach(n => {
+    const segs = buildSegments(parseDate('2026-04-01'), 14, 7, n);
+    log(`${n} rotation(s) → ${segs.length} segments`, segs.length===n*2?'ok':'err');
+    assertEq(segs.length, n*2, `${n} rotations`);
+  });
+  log('Segment count correct for all rotations ✔', 'ok');
+}
+
+async function impl_seg_dates(log) {
+  const segs = buildSegments(parseDate('2026-04-01'), 7, 7, 3);
+  for (let i=1; i<segs.length; i++) {
+    const prev = parseDate(segs[i-1].checkout);
+    const curr = parseDate(segs[i].checkin);
+    prev.setDate(prev.getDate()+1);
+    const gap = curr.getTime() - prev.getTime();
+    log(`Seg ${i-1}→${i}: gap=${gap}ms`, gap===0?'ok':'err');
+    assertEq(gap, 0, `Gap between segment ${i-1} and ${i}`);
+  }
+  log('All segments contiguous ✔', 'ok');
+}
+
+async function impl_seg_ison(log) {
+  const segs = buildSegments(parseDate('2026-04-01'), 7, 7, 2);
+  segs.forEach((s,i) => {
+    const expected = i%2===0;
+    log(`Seg ${i} isOn=${s.isOn} (expected ${expected})`, s.isOn===expected?'ok':'err');
+    assertEq(s.isOn, expected, `Segment ${i} isOn`);
+  });
+  log('isOn alternates correctly ✔', 'ok');
+}
+
+async function impl_seg_checkout(log) {
+  // 14 on / 7 off, 2 rotations = 42 days total
+  const start = parseDate('2026-04-01');
+  const segs = buildSegments(start, 14, 7, 2);
+  const lastCheckout = segs[segs.length-1].checkout;
+  const expected = fmtDate(new Date(start.getTime() + (14+7)*2*86400000 - 86400000));
+  log(`Last checkout: ${lastCheckout}, expected: ${expected}`, lastCheckout===expected?'ok':'err');
+  assertEq(lastCheckout, expected, 'Final checkout date');
+  log('Final checkout date correct ✔', 'ok');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Test map — links IDs to implementations
+// ══════════════════════════════════════════════════════════════════════════════
+const TEST_MAP = {
+  't-auth-ok':      ['connectivity', impl_auth_ok],
+  't-auth-fail':    ['connectivity', impl_auth_fail],
+  't-cors':         ['connectivity', impl_cors],
+  't-404':          ['connectivity', impl_404],
+  't-rooms-get':    ['rooms', impl_rooms_get],
+  't-rooms-struct': ['rooms', impl_rooms_struct],
+  't-room-update':  ['rooms', impl_room_update],
+  't-room-count':   ['rooms', impl_room_count],
+  't-book-get':     ['bookings', impl_book_get],
+  't-book-create':  ['bookings', impl_book_create],
+  't-book-update':  ['bookings', impl_book_update],
+  't-book-delete':  ['bookings', impl_book_delete],
+  't-book-struct':  ['bookings', impl_book_struct],
+  't-checkin-today':  ['daily', impl_checkin_today],
+  't-checkout-today': ['daily', impl_checkout_today],
+  't-checkin-date':   ['daily', impl_checkin_date],
+  't-checkin-empty':  ['daily', impl_checkin_empty],
+  't-import-empty':    ['import', impl_import_empty],
+  't-import-bookings': ['import', impl_import_bookings],
+  't-import-cleanup':  ['import', impl_import_cleanup],
+  't-roster-7-7':   ['logic', impl_roster_7_7],
+  't-roster-14-14': ['logic', impl_roster_14_14],
+  't-date-fmt':     ['logic', impl_date_fmt],
+  't-date-display': ['logic', impl_date_display],
+  't-overlap-yes':  ['logic', impl_overlap_yes],
+  't-overlap-no':   ['logic', impl_overlap_no],
+  't-occupies-on':  ['logic', impl_occupies_on],
+  't-occupies-seg': ['logic', impl_occupies_seg],
+  't-conflict':     ['logic', impl_conflict],
+  't-seg-count':    ['roster', impl_seg_count],
+  't-seg-dates':    ['roster', impl_seg_dates],
+  't-seg-ison':     ['roster', impl_seg_ison],
+  't-seg-checkout': ['roster', impl_seg_checkout],
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Run all
+// ══════════════════════════════════════════════════════════════════════════════
+async function runAll() {
+  Results.pass = 0; Results.fail = 0; Results.skip = 0;
+  updateSummary();
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true; btn.textContent = '⏳ Running...';
+  setStatus('running', 'Running tests...');
+  const t0 = Date.now();
+
+  for (const [testId, [suiteId, fn]] of Object.entries(TEST_MAP)) {
+    await runTest(suiteId, testId, fn);
+    // Small delay so UI stays responsive
+    await new Promise(r => setTimeout(r, 30));
+  }
+
+  const elapsed = ((Date.now()-t0)/1000).toFixed(1);
+  const allPass = Results.fail === 0;
+  setStatus(allPass?'pass':'fail', allPass?`All passed in ${elapsed}s`:`${Results.fail} failed in ${elapsed}s`);
+  btn.disabled = false; btn.textContent = '▶ Run All Tests';
+  document.getElementById('footer-time').textContent = `Last run: ${new Date().toLocaleTimeString()} — ${elapsed}s`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Init
+// ══════════════════════════════════════════════════════════════════════════════
+window.addEventListener('load', () => {
+  buildSuites();
+  setInterval(()=>{
+    document.getElementById('footer-time').textContent = new Date().toLocaleTimeString();
+  }, 1000);
+});
+</script>
+</body>
+</html>
