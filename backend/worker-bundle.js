@@ -56,7 +56,7 @@ function uuid() {
 // ── Password hashing (PBKDF2-SHA256) ─────────────────────────────────────────
 // Format stored: pbkdf2$<iterations>$<salt_b64>$<hash_b64>
 
-const PBKDF2_ITERATIONS = 200_000;
+const PBKDF2_ITERATIONS = 100_000;  // CF Workers max is 100k
 
 async function hashPassword(password) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
