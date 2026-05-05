@@ -1,0 +1,19 @@
+# backend/wrangler.toml
+name                = "campbook2"
+main                = "src/index.js"
+compatibility_date  = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding       = "DB"
+database_name = "camp-alloc-db"
+database_id   = "YOUR_D1_DATABASE_ID"   # replace after: wrangler d1 create camp-alloc-db
+
+# All secrets set via dashboard or: wrangler secret put <NAME>
+# Required secrets:
+#   APP_PASSWORD   — admin bootstrap password (used only for first registration)
+#   JWT_SECRET     — long random string for signing JWTs  (32+ chars)
+#   REFRESH_SECRET — separate long random string for refresh tokens
+#   EMAIL_FROM     — sender address for verification/reset emails
+#   SENDGRID_KEY   — SendGrid API key (or remove if using another provider)
+#   FRONTEND_URL   — e.g. https://kmgcamp.github.io/camp-alloc-v2

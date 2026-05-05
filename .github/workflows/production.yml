@@ -1,0 +1,88 @@
+# .github/workflows/production.yml
+# Deploys to production GitHub Pages on every push to main
+
+name: 🚀 Production Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy-production:
+    name: Build & Deploy to Production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Build production site
+        env:
+          WORKER_URL: ${{ secrets.PRODUCTION_WORKER_URL || 'https://campbook2.alvinkc.workers.dev' }}
+        run: |
+          mkdir -p /tmp/prod-dist
+          sed \
+            -e "s|WORKER_URL:  '[^']*'|WORKER_URL:  '${WORKER_URL}'|g" \
+            index.html > /tmp/prod-dist/index.html
+          [ -f test.html ] && sed \
+            -e "s|https://campbook2\.alvinkc\.workers\.dev|${WORKER_URL}|g" \
+            test.html > /tmp/prod-dist/test.html
+          echo "Production build done:"
+          ls -lh /tmp/prod-dist/
+
+      - name: Ensure gh-pages branch exists
+        run: |
+          if git ls-remote --exit-code --heads origin gh-pages; then
+            echo "gh-pages exists"
+            git fetch origin gh-pages
+          else
+            echo "Creating gh-pages branch"
+            git worktree add /tmp/init-gh-pages --orphan gh-pages
+            cd /tmp/init-gh-pages
+            echo "<html><body>Deploying...</body></html>" > index.html
+            git add index.html
+            git commit -m "chore: init gh-pages branch"
+            git push origin gh-pages
+            cd -
+            git worktree remove /tmp/init-gh-pages
+            git fetch origin gh-pages
+          fi
+
+      - name: Deploy to gh-pages
+        run: |
+          git worktree add /tmp/gh-pages-deploy origin/gh-pages -B gh-pages
+
+          cd /tmp/gh-pages-deploy
+
+          # Replace production files, preserve pr-* preview folders
+          cp /tmp/prod-dist/index.html ./index.html
+          [ -f /tmp/prod-dist/test.html ] && cp /tmp/prod-dist/test.html ./test.html
+
+          git add index.html test.html 2>/dev/null || git add index.html
+          git diff --staged --quiet \
+            && echo "Nothing changed" \
+            || git commit -m "deploy: production @ $(echo ${{ github.sha }} | cut -c1-7)"
+
+          git push origin gh-pages
+          echo "Production deployed"
+
+      - name: Write job summary
+        run: |
+          echo "### ✅ Production Deployed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🌐 App | https://kmgcamp.github.io/camp-alloc-v2/ |" >> $GITHUB_STEP_SUMMARY
+          echo "| ⚗ Tests | https://kmgcamp.github.io/camp-alloc-v2/test.html |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📦 Commit | \`$(echo ${{ github.sha }} | cut -c1-7)\` |" >> $GITHUB_STEP_SUMMARY
