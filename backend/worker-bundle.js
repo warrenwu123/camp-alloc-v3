@@ -854,7 +854,6 @@ async function getCheckouts(req, ctx) {
 
 async function importBookings(req, ctx) {
   const { bookings: bArr = [], rooms: rArr = [] } = await req.json().catch(() => ({}));
-  const { Rooms } = await import('../db/camp.js');
   for (const r of rArr) await Rooms.update(ctx.db, r);
   for (const b of bArr) await Bookings.upsert(ctx.db, b);
   await AuditLog.insert(ctx.db, {
