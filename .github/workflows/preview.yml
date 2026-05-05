@@ -37,7 +37,7 @@ jobs:
       - name: Build preview HTML
         env:
           PR_NUMBER:  ${{ github.event.pull_request.number }}
-          WORKER_URL: ${{ secrets.STAGING_WORKER_URL || secrets.PRODUCTION_WORKER_URL || 'https://campbook2.alvinkc.workers.dev' }}
+          WORKER_URL: ${{ secrets.STAGING_WORKER_URL || secrets.PRODUCTION_WORKER_URL || 'https://camp-alloc-v4.alvinkc.workers.dev' }}
           REPO:       camp-alloc-v2
           OWNER:      ${{ github.repository_owner }}
         run: |
