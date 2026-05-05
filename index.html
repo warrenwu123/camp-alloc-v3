@@ -24,22 +24,52 @@
   body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;min-height:100vh;}
 
   /* ══ LOGIN ══ */
-  .login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:28px;background:radial-gradient(ellipse at 50% 0%,rgba(240,165,0,.08) 0%,transparent 65%),var(--bg);}
-  .login-logo{font-family:var(--font-head);font-size:48px;font-weight:900;letter-spacing:5px;color:var(--accent);text-transform:uppercase;}
-  .login-logo span{color:var(--text-dim);font-weight:400;}
-  .login-site{color:var(--text-dim);font-size:14px;letter-spacing:2px;font-family:var(--font-head);text-transform:uppercase;}
-  .login-card{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:var(--radius);padding:40px 48px;width:380px;max-width:92vw;box-shadow:0 24px 64px rgba(0,0,0,.6);}
-  .login-card h2{font-family:var(--font-head);font-size:22px;font-weight:700;letter-spacing:1px;margin-bottom:6px;}
-  .login-card p{color:var(--text-dim);font-size:13px;margin-bottom:28px;line-height:1.5;}
-  .login-field{display:flex;flex-direction:column;gap:6px;margin-bottom:20px;}
-  .login-label{font-family:var(--font-head);font-size:12px;font-weight:700;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase;}
-  .login-input{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:var(--radius);padding:11px 14px;font-size:15px;font-family:var(--font-body);width:100%;transition:border-color .15s;letter-spacing:2px;}
-  .login-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(240,165,0,.15);}
-  .login-btn{width:100%;background:var(--accent);color:#000;border:none;border-radius:var(--radius);padding:13px;font-family:var(--font-head);font-size:16px;font-weight:900;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .15s;}
-  .login-btn:hover{background:#ffc233;transform:translateY(-1px);box-shadow:0 4px 16px rgba(240,165,0,.3);}
-  .login-error{color:#f85149;font-size:12px;margin-top:12px;text-align:center;min-height:18px;font-family:var(--font-head);letter-spacing:.5px;}
-  .login-shake{animation:shake .35s ease;}
+  /* ══ AUTH SCREENS ══ */
+  .auth-screen{min-height:100vh;display:none;align-items:center;justify-content:center;flex-direction:column;gap:0;background:var(--bg);position:relative;overflow:hidden;}
+  .auth-screen.active{display:flex;}
+  .auth-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(240,165,0,.12) 0%,transparent 70%);pointer-events:none;}
+  .auth-bg::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(255,255,255,.015) 60px,rgba(255,255,255,.015) 61px),repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(255,255,255,.015) 60px,rgba(255,255,255,.015) 61px);}
+  .auth-panel{width:420px;max-width:94vw;position:relative;z-index:1;padding:20px 0 40px;}
+  .auth-logo{font-family:var(--font-head);font-size:42px;font-weight:900;letter-spacing:6px;color:var(--accent);text-transform:uppercase;text-align:center;margin-bottom:4px;}
+  .auth-logo span{color:var(--text-dim);font-weight:300;}
+  .auth-tagline{font-family:var(--font-head);font-size:11px;letter-spacing:3px;color:var(--text-muted);text-transform:uppercase;text-align:center;margin-bottom:40px;}
+  .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:36px 40px;box-shadow:0 32px 80px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.04) inset;}
+  .auth-card-title{font-family:var(--font-head);font-size:24px;font-weight:900;letter-spacing:1px;margin-bottom:4px;}
+  .auth-card-sub{color:var(--text-dim);font-size:13px;margin-bottom:28px;line-height:1.5;}
+  .auth-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:28px;gap:0;}
+  .auth-tab{flex:1;background:none;border:none;color:var(--text-muted);padding:10px;font-family:var(--font-head);font-size:14px;font-weight:700;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:all .2s;border-bottom:2px solid transparent;margin-bottom:-1px;}
+  .auth-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .auth-tab:hover:not(.active){color:var(--text-dim);}
+  .auth-field{display:flex;flex-direction:column;gap:6px;margin-bottom:18px;}
+  .auth-label{font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--text-dim);text-transform:uppercase;}
+  .auth-input{background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:11px 14px;font-size:14px;font-family:var(--font-body);width:100%;transition:all .15s;}
+  .auth-input:focus{outline:none;border-color:var(--accent);background:rgba(240,165,0,.04);box-shadow:0 0 0 3px rgba(240,165,0,.1);}
+  .auth-input::placeholder{color:var(--text-muted);}
+  .auth-btn{width:100%;background:var(--accent);color:#000;border:none;border-radius:6px;padding:13px;font-family:var(--font-head);font-size:15px;font-weight:900;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-top:8px;position:relative;overflow:hidden;}
+  .auth-btn:hover:not(:disabled){background:#ffc233;transform:translateY(-1px);box-shadow:0 6px 20px rgba(240,165,0,.35);}
+  .auth-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+  .auth-btn-ghost{width:100%;background:none;color:var(--text-dim);border:1px solid var(--border);border-radius:6px;padding:11px;font-family:var(--font-head);font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .15s;margin-top:8px;}
+  .auth-btn-ghost:hover{background:var(--surface2);color:var(--text);}
+  .auth-msg{font-size:12px;margin-top:14px;text-align:center;min-height:18px;font-family:var(--font-head);letter-spacing:.5px;padding:8px 12px;border-radius:4px;display:none;}
+  .auth-msg.show{display:block;}
+  .auth-msg.error{background:var(--red-dim);color:var(--red);}
+  .auth-msg.success{background:var(--green-dim);color:var(--green);}
+  .auth-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--text-muted);font-size:11px;font-family:var(--font-head);letter-spacing:1px;text-transform:uppercase;}
+  .auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+  .auth-link{background:none;border:none;color:var(--accent);font-family:var(--font-head);font-size:12px;font-weight:700;letter-spacing:.5px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
+  .auth-link:hover{color:#ffc233;}
+  .auth-footer{text-align:center;margin-top:18px;font-size:12px;color:var(--text-muted);font-family:var(--font-head);letter-spacing:.5px;}
+  .auth-role-badge{display:inline-block;background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue);border-radius:4px;font-family:var(--font-head);font-size:10px;font-weight:700;letter-spacing:1px;padding:2px 8px;text-transform:uppercase;margin-left:6px;vertical-align:middle;}
+  .auth-role-badge.admin{background:rgba(240,165,0,.15);color:var(--accent);border-color:var(--accent);}
+  .auth-role-badge.viewer{background:var(--surface2);color:var(--text-dim);border-color:var(--border);}
+  .auth-shake{animation:shake .35s ease;}
   @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+  .pw-strength{height:3px;border-radius:2px;margin-top:6px;transition:all .3s;background:var(--border);}
+  .pw-strength.weak{background:var(--red);width:33%;}
+  .pw-strength.fair{background:var(--yellow);width:66%;}
+  .pw-strength.strong{background:var(--green);width:100%;}
+  /* legacy compat */
+  .login-screen{display:none;}
 
   /* ══ LOADING ══ */
   .loading-overlay{position:fixed;inset:0;background:rgba(13,17,23,.88);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:999;backdrop-filter:blur(4px);}
@@ -229,18 +259,100 @@
 <body>
 
 <!-- ══ LOGIN SCREEN ══ -->
-<div id="loginScreen" class="login-screen" style="display:none">
-  <div class="login-logo">Camp<span>Alloc</span></div>
-  <div class="login-site">Wyndham Airport Camp — Room Management</div>
-  <div class="login-card">
-    <h2>🔒 Enter Password</h2>
-    <p>This system is for authorised camp staff only.</p>
-    <div class="login-field">
-      <div class="login-label">Password</div>
-      <input class="login-input" type="password" id="loginPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter')App.Auth.doLogin()">
+<!-- ══ AUTH SCREENS ══ -->
+
+<!-- LOGIN -->
+<div id="authLogin" class="auth-screen active">
+  <div class="auth-bg"></div>
+  <div class="auth-panel">
+    <div class="auth-logo">Camp<span>Alloc</span></div>
+    <div class="auth-tagline">Wyndham Airport Camp — Room Management</div>
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="App.Auth.UI.showLogin()">Sign In</button>
+        <button class="auth-tab" onclick="App.Auth.UI.showRegister()">Register</button>
+      </div>
+      <div class="auth-field">
+        <div class="auth-label">Email</div>
+        <input class="auth-input" type="email" id="loginEmail" placeholder="you@example.com"
+          onkeydown="if(event.key==='Enter')document.getElementById('loginPassword').focus()">
+      </div>
+      <div class="auth-field">
+        <div class="auth-label">Password</div>
+        <input class="auth-input" type="password" id="loginPassword" placeholder="••••••••"
+          onkeydown="if(event.key==='Enter')App.Auth.doLogin()">
+      </div>
+      <button class="auth-btn" id="loginBtn" onclick="App.Auth.doLogin()">Sign In</button>
+      <div class="auth-msg" id="loginMsg"></div>
+      <div class="auth-footer">
+        <button class="auth-link" onclick="App.Auth.UI.showForgot()">Forgot password?</button>
+      </div>
     </div>
-    <button class="login-btn" onclick="App.Auth.doLogin()">Enter</button>
-    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- REGISTER -->
+<div id="authRegister" class="auth-screen">
+  <div class="auth-bg"></div>
+  <div class="auth-panel">
+    <div class="auth-logo">Camp<span>Alloc</span></div>
+    <div class="auth-tagline">Create your account</div>
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab" onclick="App.Auth.UI.showLogin()">Sign In</button>
+        <button class="auth-tab active" onclick="App.Auth.UI.showRegister()">Register</button>
+      </div>
+      <div class="auth-field">
+        <div class="auth-label">Full Name</div>
+        <input class="auth-input" type="text" id="regName" placeholder="James Crawford"
+          onkeydown="if(event.key==='Enter')document.getElementById('regEmail').focus()">
+      </div>
+      <div class="auth-field">
+        <div class="auth-label">Email</div>
+        <input class="auth-input" type="email" id="regEmail" placeholder="you@example.com"
+          onkeydown="if(event.key==='Enter')document.getElementById('regPassword').focus()">
+      </div>
+      <div class="auth-field">
+        <div class="auth-label">Password</div>
+        <input class="auth-input" type="password" id="regPassword" placeholder="Min 8 characters"
+          oninput="App.Auth.UI.checkPwStrength(this.value)"
+          onkeydown="if(event.key==='Enter')document.getElementById('regConfirm').focus()">
+        <div class="pw-strength" id="pwStrength"></div>
+      </div>
+      <div class="auth-field">
+        <div class="auth-label">Confirm Password</div>
+        <input class="auth-input" type="password" id="regConfirm" placeholder="••••••••"
+          onkeydown="if(event.key==='Enter')App.Auth.doRegister()">
+      </div>
+      <button class="auth-btn" id="regBtn" onclick="App.Auth.doRegister()">Create Account</button>
+      <div class="auth-msg" id="regMsg"></div>
+      <div class="auth-footer" style="color:var(--text-muted);font-size:11px;margin-top:12px">
+        The first account created automatically becomes admin.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FORGOT PASSWORD -->
+<div id="authForgot" class="auth-screen">
+  <div class="auth-bg"></div>
+  <div class="auth-panel">
+    <div class="auth-logo">Camp<span>Alloc</span></div>
+    <div class="auth-tagline">Reset your password</div>
+    <div class="auth-card">
+      <div class="auth-card-title">Forgot Password</div>
+      <div class="auth-card-sub">Enter your email and we'll send you a reset link.</div>
+      <div class="auth-field">
+        <div class="auth-label">Email</div>
+        <input class="auth-input" type="email" id="forgotEmail" placeholder="you@example.com"
+          onkeydown="if(event.key==='Enter')App.Auth.doForgot()">
+      </div>
+      <button class="auth-btn" id="forgotBtn" onclick="App.Auth.doForgot()">Send Reset Link</button>
+      <div class="auth-msg" id="forgotMsg"></div>
+      <div class="auth-footer" style="margin-top:20px">
+        <button class="auth-link" onclick="App.Auth.UI.showLogin()">← Back to Sign In</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -265,7 +377,8 @@
         <span class="save-dot" id="saveDot"></span><span id="saveText">Synced</span>
       </span>
       <div class="nav-info" id="navTime"></div>
-      <button class="btn-signout" onclick="App.Auth.doLogout()">🔒 Lock</button>
+      <div id="navUser" style="font-family:var(--font-head);font-size:12px;color:var(--text-dim);letter-spacing:.5px;display:flex;align-items:center;gap:6px"></div>
+      <button class="btn-signout" onclick="App.Auth.doLogout()">🔒 Sign Out</button>
     </div>
   </nav>
 
@@ -526,7 +639,7 @@ App.Data = {};
 App.Data.API = {
   _h() {
     return {
-      'X-Session-Token': App.Auth.getToken(),
+      'Authorization': `Bearer ${App.Auth.getToken()}`,
       'Content-Type': 'application/json',
     };
   },
@@ -1604,70 +1717,208 @@ App.UI.Reports = {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Layer 5 — Auth
-// Password is sent once to POST /api/auth — worker validates and returns a
-// signed HMAC token. All subsequent requests carry only the token.
-// The password is NEVER stored in this file or in localStorage.
+// Full auth: login, register, forgot password, token refresh, logout.
+// JWT access token (15min) + refresh token (7d) stored in localStorage.
+// Password is sent once over HTTPS and never stored locally.
 // ─────────────────────────────────────────────────────────────────────────────
 App.Auth = {
-  getToken() {
-    return localStorage.getItem(App.Config.LS_TOKEN) || '';
-  },
+
+  // ── Token storage ────────────────────────────────────────────────────────
+  getToken()  { return localStorage.getItem(App.Config.LS_TOKEN) || ''; },
+  getRefresh(){ return localStorage.getItem(App.Config.LS_TOKEN + '_refresh') || ''; },
 
   isAuthenticated() {
     try {
-      const stored = localStorage.getItem(App.Config.LS_TOKEN + '_exp');
-      if (!stored) return false;
-      return Date.now() < +stored;
+      const exp = localStorage.getItem(App.Config.LS_TOKEN + '_exp');
+      return exp && Date.now() < +exp;
     } catch { return false; }
   },
 
-  _saveToken(token) {
-    localStorage.setItem(App.Config.LS_TOKEN, token);
-    localStorage.setItem(App.Config.LS_TOKEN + '_exp', Date.now() + App.Config.SESSION_MS);
+  _saveTokens(accessToken, refreshToken, user) {
+    localStorage.setItem(App.Config.LS_TOKEN,             accessToken);
+    localStorage.setItem(App.Config.LS_TOKEN + '_exp',    Date.now() + App.Config.SESSION_MS);
+    localStorage.setItem(App.Config.LS_TOKEN + '_refresh',refreshToken);
+    if (user) localStorage.setItem(App.Config.LS_TOKEN + '_user', JSON.stringify(user));
+  },
+
+  getUser() {
+    try { return JSON.parse(localStorage.getItem(App.Config.LS_TOKEN + '_user') || 'null'); }
+    catch { return null; }
   },
 
   clearAuth() {
-    localStorage.removeItem(App.Config.LS_TOKEN);
-    localStorage.removeItem(App.Config.LS_TOKEN + '_exp');
+    ['', '_exp', '_refresh', '_user'].forEach(s =>
+      localStorage.removeItem(App.Config.LS_TOKEN + s)
+    );
   },
 
-  async doLogin() {
-    const pass = document.getElementById('loginPassword').value;
-    const btn  = document.querySelector('.login-btn');
-    btn.textContent = 'Verifying...'; btn.disabled = true;
-
+  // ── Try to refresh expired access token silently ─────────────────────────
+  async tryRefresh() {
+    const rt = this.getRefresh();
+    if (!rt) return false;
     try {
-      const r = await fetch(`${App.Config.WORKER_URL}/api/auth`, {
+      const r = await fetch(`${App.Config.WORKER_URL}/api/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: pass }),
+        body: JSON.stringify({ refreshToken: rt }),
       });
+      if (!r.ok) return false;
+      const { accessToken, refreshToken } = await r.json();
+      this._saveTokens(accessToken, refreshToken, this.getUser());
+      return true;
+    } catch { return false; }
+  },
 
-      if (!r.ok) {
-        throw new Error('wrong');
-      }
+  // ── Login ────────────────────────────────────────────────────────────────
+  async doLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass  = document.getElementById('loginPassword').value;
+    const btn   = document.getElementById('loginBtn');
 
-      const { token } = await r.json();
-      this._saveToken(token);
+    if (!email || !pass) {
+      return App.Auth.UI.showMsg('loginMsg', 'Please enter your email and password.', 'error');
+    }
+
+    btn.textContent = 'Signing in...'; btn.disabled = true;
+    App.Auth.UI.clearMsg('loginMsg');
+
+    try {
+      const r = await fetch(`${App.Config.WORKER_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: pass }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Login failed');
+
+      this._saveTokens(data.accessToken, data.refreshToken, data.user);
       document.getElementById('loginPassword').value = '';
-      document.getElementById('loginError').textContent = '';
       await App.bootstrap();
 
-    } catch {
-      const card = document.querySelector('.login-card');
-      card.classList.remove('login-shake'); void card.offsetWidth; card.classList.add('login-shake');
-      document.getElementById('loginError').textContent = 'Incorrect password. Try again.';
-      document.getElementById('loginPassword').value = '';
+    } catch(e) {
+      const card = document.querySelector('#authLogin .auth-card');
+      card.classList.remove('auth-shake'); void card.offsetWidth; card.classList.add('auth-shake');
+      App.Auth.UI.showMsg('loginMsg', e.message, 'error');
     } finally {
-      btn.textContent = 'Enter'; btn.disabled = false;
+      btn.textContent = 'Sign In'; btn.disabled = false;
     }
   },
 
-  doLogout() {
+  // ── Register ─────────────────────────────────────────────────────────────
+  async doRegister() {
+    const name    = document.getElementById('regName').value.trim();
+    const email   = document.getElementById('regEmail').value.trim();
+    const pass    = document.getElementById('regPassword').value;
+    const confirm = document.getElementById('regConfirm').value;
+    const btn     = document.getElementById('regBtn');
+
+    if (!name || !email || !pass)
+      return App.Auth.UI.showMsg('regMsg', 'All fields are required.', 'error');
+    if (pass.length < 8)
+      return App.Auth.UI.showMsg('regMsg', 'Password must be at least 8 characters.', 'error');
+    if (pass !== confirm)
+      return App.Auth.UI.showMsg('regMsg', 'Passwords do not match.', 'error');
+
+    btn.textContent = 'Creating account...'; btn.disabled = true;
+    App.Auth.UI.clearMsg('regMsg');
+
+    try {
+      const r = await fetch(`${App.Config.WORKER_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password: pass }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Registration failed');
+
+      App.Auth.UI.showMsg('regMsg',
+        `Account created${data.role === 'admin' ? ' (you are the first admin)' : ''}! Check your email to verify.`,
+        'success'
+      );
+      ['regName','regEmail','regPassword','regConfirm'].forEach(id =>
+        document.getElementById(id).value = ''
+      );
+      setTimeout(() => App.Auth.UI.showLogin(), 3000);
+
+    } catch(e) {
+      App.Auth.UI.showMsg('regMsg', e.message, 'error');
+    } finally {
+      btn.textContent = 'Create Account'; btn.disabled = false;
+    }
+  },
+
+  // ── Forgot password ───────────────────────────────────────────────────────
+  async doForgot() {
+    const email = document.getElementById('forgotEmail').value.trim();
+    const btn   = document.getElementById('forgotBtn');
+    if (!email) return App.Auth.UI.showMsg('forgotMsg', 'Please enter your email.', 'error');
+
+    btn.textContent = 'Sending...'; btn.disabled = true;
+    App.Auth.UI.clearMsg('forgotMsg');
+
+    try {
+      const r = await fetch(`${App.Config.WORKER_URL}/api/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await r.json();
+      App.Auth.UI.showMsg('forgotMsg', data.message || 'Reset link sent!', 'success');
+    } catch {
+      App.Auth.UI.showMsg('forgotMsg', 'Something went wrong. Please try again.', 'error');
+    } finally {
+      btn.textContent = 'Send Reset Link'; btn.disabled = false;
+    }
+  },
+
+  // ── Logout ────────────────────────────────────────────────────────────────
+  async doLogout() {
+    try {
+      await fetch(`${App.Config.WORKER_URL}/api/auth/logout`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${this.getToken()}`, 'Content-Type': 'application/json' },
+      });
+    } catch { /* best effort */ }
     this.clearAuth();
     document.getElementById('mainApp').style.display = 'none';
-    document.getElementById('loginScreen').style.display = 'flex';
-    setTimeout(() => document.getElementById('loginPassword').focus(), 100);
+    App.Auth.UI.showLogin();
+  },
+
+  // ── UI helpers ────────────────────────────────────────────────────────────
+  UI: {
+    showLogin() {
+      document.querySelectorAll('.auth-screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('authLogin').classList.add('active');
+      setTimeout(() => document.getElementById('loginEmail').focus(), 100);
+    },
+    showRegister() {
+      document.querySelectorAll('.auth-screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('authRegister').classList.add('active');
+      setTimeout(() => document.getElementById('regName').focus(), 100);
+    },
+    showForgot() {
+      document.querySelectorAll('.auth-screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('authForgot').classList.add('active');
+      setTimeout(() => document.getElementById('forgotEmail').focus(), 100);
+    },
+    showMsg(id, text, type) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = text;
+      el.className = `auth-msg show ${type}`;
+    },
+    clearMsg(id) {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = ''; el.className = 'auth-msg'; }
+    },
+    checkPwStrength(pw) {
+      const bar = document.getElementById('pwStrength');
+      if (!bar) return;
+      if (pw.length === 0) { bar.className = 'pw-strength'; return; }
+      const strong = pw.length >= 10 && /[A-Z]/.test(pw) && /[0-9]/.test(pw) && /[^A-Za-z0-9]/.test(pw);
+      const fair   = pw.length >= 8;
+      bar.className = 'pw-strength ' + (strong ? 'strong' : fair ? 'fair' : 'weak');
+    },
   },
 };
 
@@ -1692,6 +1943,14 @@ App.bootstrap = async function() {
   setInterval(App.UI.Nav.updateClock.bind(App.UI.Nav), 1000);
   App.UI.Nav.updateClock();
   App.UI.Reports.initYears();
+  // Show user info in nav
+  const _u = App.Auth.getUser();
+  if (_u) {
+    const roleColor = _u.role === 'admin' ? 'var(--accent)' : _u.role === 'editor' ? 'var(--blue)' : 'var(--text-muted)';
+    document.getElementById('navUser').innerHTML =
+      `<span>${_u.name || _u.email}</span>` +
+      `<span style="background:rgba(240,165,0,.15);color:${roleColor};border:1px solid ${roleColor};border-radius:4px;font-size:10px;font-weight:700;padding:2px 7px;letter-spacing:1px;text-transform:uppercase">${_u.role}</span>`;
+  }
   // Auto-refresh every 3 min to pick up other users' changes
   setInterval(async()=>{
     try { await App.Data.Store.load(); App.UI.Calendar.render(); App.UI.updateStats(); App.UI.BookingForm.renderList(); }
@@ -1706,8 +1965,14 @@ window.addEventListener('load', () => {
   window.addEventListener('resize', ()=>{ if(document.getElementById('page-overview').classList.contains('active')) App.UI.Calendar.render(); });
 
   if (!App.Auth.isAuthenticated()) {
-    document.getElementById('loginScreen').style.display='flex';
-    setTimeout(()=>document.getElementById('loginPassword').focus(),100);
+    // Try silent token refresh before showing login
+    App.Auth.tryRefresh().then(refreshed => {
+      if (refreshed) {
+        App.bootstrap();
+      } else {
+        App.Auth.UI.showLogin();
+      }
+    });
   } else {
     App.bootstrap();
   }
