@@ -1,5 +1,5 @@
 # .github/workflows/cleanup.yml
-# Cleans up the PR preview folder when a PR is closed or merged
+# Removes the preview folder from main when a PR is closed/merged
 
 name: 🧹 Cleanup PR Preview
 
@@ -18,9 +18,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout main
         uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
 
       - name: Configure git
@@ -32,24 +33,15 @@ jobs:
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          # Check branch exists before trying to clean
-          if ! git ls-remote --exit-code --heads origin gh-pages-previews; then
-            echo "gh-pages-previews branch does not exist — nothing to clean"
-            exit 0
-          fi
-
-          git fetch origin gh-pages-previews
-          git worktree add /tmp/previews-cleanup origin/gh-pages-previews -B gh-pages-previews
-
-          cd /tmp/previews-cleanup
-
-          if [ -d "pr-${PR_NUMBER}" ]; then
-            git rm -rf "pr-${PR_NUMBER}"
-            git commit -m "chore: remove preview PR #${PR_NUMBER}"
-            git push origin gh-pages-previews
-            echo "Removed pr-${PR_NUMBER}/"
+          if [ -d "previews/pr-${PR_NUMBER}" ]; then
+            git rm -rf "previews/pr-${PR_NUMBER}"
+            # Remove previews/ dir entirely if now empty
+            [ -z "$(ls -A previews/ 2>/dev/null)" ] && git rm -rf previews/ || true
+            git commit -m "chore: remove preview for PR #${PR_NUMBER}"
+            git push origin main
+            echo "Removed previews/pr-${PR_NUMBER}"
           else
-            echo "No preview folder for PR #${PR_NUMBER} — already clean"
+            echo "No preview folder found — nothing to clean"
           fi
 
       - name: Update PR comment
@@ -60,14 +52,10 @@ jobs:
             const merged = context.payload.pull_request.merged;
             const owner  = context.repo.owner;
             const repo   = context.repo.repo;
-            const base   = `https://${owner}.github.io/${repo}`;
+            const url    = `https://${owner}.github.io/${repo}/`;
 
             const body = merged
-              ? [
-                  `## ✅ PR #${pr} Merged — Preview Removed`,
-                  ``,
-                  `Production is now deploying → [${base}/](${base}/)`,
-                ].join('\n')
+              ? `## ✅ PR #${pr} Merged — Preview Removed\n\nProduction deploying → [${url}](${url})`
               : `## 🗑 PR #${pr} Closed — Preview Removed`;
 
             const { data: comments } = await github.rest.issues.listComments({ owner, repo, issue_number: pr });

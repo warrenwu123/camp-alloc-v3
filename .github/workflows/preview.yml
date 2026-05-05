@@ -1,6 +1,10 @@
 # .github/workflows/preview.yml
-# Deploys a staging preview for every PR to GitHub Pages
-# Preview URL: https://kmgcamp.github.io/camp-alloc-v2/pr-{number}/
+# Since GitHub Pages serves from main branch root,
+# PR previews deploy to a separate gh-pages-previews branch
+# which is configured as a second GitHub Pages site isn't possible
+# on the same repo — so instead we use a /previews/ subfolder on main.
+#
+# Preview URL: https://kmgcamp.github.io/camp-alloc-v2/previews/pr-{N}/
 
 name: 🔍 PR Preview
 
@@ -30,79 +34,56 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Build preview site
+      - name: Build preview HTML
         env:
           PR_NUMBER:  ${{ github.event.pull_request.number }}
           WORKER_URL: ${{ secrets.STAGING_WORKER_URL || secrets.PRODUCTION_WORKER_URL || 'https://campbook2.alvinkc.workers.dev' }}
-          REPO_NAME:  camp-alloc-v2
+          REPO:       camp-alloc-v2
           OWNER:      ${{ github.repository_owner }}
         run: |
-          mkdir -p /tmp/preview-dist
+          mkdir -p /tmp/preview-build
 
-          BASE_HREF="/${REPO_NAME}/pr-${PR_NUMBER}/"
+          BASE="/camp-alloc-v2/previews/pr-${PR_NUMBER}/"
 
-          patch_html() {
-            local src=$1 dst=$2
+          patch_file() {
             sed \
               -e "s|WORKER_URL:  '[^']*'|WORKER_URL:  '${WORKER_URL}'|g" \
               -e "s|value=\"https://campbook2\.alvinkc\.workers\.dev\"|value=\"${WORKER_URL}\"|g" \
-              -e "s|<head>|<head>\n  <base href=\"${BASE_HREF}\">|" \
-              "$src" > "$dst"
+              -e "s|<head>|<head><base href=\"${BASE}\">|" \
+              "$1" > "$2"
           }
 
-          patch_html index.html /tmp/preview-dist/index.html
-          [ -f test.html ] && patch_html test.html /tmp/preview-dist/test.html
+          patch_file index.html /tmp/preview-build/index.html
+          [ -f test.html ] && patch_file test.html /tmp/preview-build/test.html
 
-          echo "Build done — files:"
-          ls -lh /tmp/preview-dist/
+          echo "Build done:"
+          ls -lh /tmp/preview-build/
 
-      - name: Ensure gh-pages-previews branch exists
-        run: |
-          if git ls-remote --exit-code --heads origin gh-pages-previews; then
-            echo "Branch exists"
-            git fetch origin gh-pages-previews
-          else
-            echo "Creating gh-pages-previews branch"
-            git worktree add /tmp/init-previews --orphan gh-pages-previews
-            cd /tmp/init-previews
-            cat > index.html << 'HTML'
-<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>CampAlloc Previews</title></head>
-<body style="font-family:sans-serif;padding:2rem">
-<h2>CampAlloc PR Previews</h2>
-<p>Each PR preview lives at <code>/pr-N/</code></p>
-</body></html>
-HTML
-            git add index.html
-            git commit -m "chore: init gh-pages-previews branch"
-            git push origin gh-pages-previews
-            cd -
-            git worktree remove /tmp/init-previews
-            git fetch origin gh-pages-previews
-          fi
-
-      - name: Deploy pr-${{ github.event.pull_request.number }} folder
+      - name: Checkout main and deploy preview folder
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           SHA:       ${{ github.event.pull_request.head.sha }}
         run: |
-          git worktree add /tmp/previews-deploy origin/gh-pages-previews -B gh-pages-previews
+          # Switch to main branch to write the preview folder
+          git fetch origin main
+          git checkout main
 
-          cd /tmp/previews-deploy
-          rm -rf "pr-${PR_NUMBER}"
-          mkdir  "pr-${PR_NUMBER}"
-          cp /tmp/preview-dist/index.html "pr-${PR_NUMBER}/index.html"
-          [ -f /tmp/preview-dist/test.html ] && cp /tmp/preview-dist/test.html "pr-${PR_NUMBER}/test.html"
+          mkdir -p "previews/pr-${PR_NUMBER}"
+          cp /tmp/preview-build/index.html "previews/pr-${PR_NUMBER}/index.html"
+          [ -f /tmp/preview-build/test.html ] && \
+            cp /tmp/preview-build/test.html "previews/pr-${PR_NUMBER}/test.html"
 
-          git add "pr-${PR_NUMBER}/"
+          # Make sure .nojekyll exists
+          touch .nojekyll
+
+          git add "previews/pr-${PR_NUMBER}/" .nojekyll
           git diff --staged --quiet \
-            && echo "Nothing changed" \
+            && echo "No changes" \
             || git commit -m "preview: PR #${PR_NUMBER} @ ${SHA:0:7}"
 
-          git push origin gh-pages-previews
-          echo "Deployed to pr-${PR_NUMBER}/"
+          git push origin main
 
-      - name: Post preview comment on PR
+      - name: Post preview comment
         uses: actions/github-script@v7
         with:
           script: |
@@ -117,17 +98,20 @@ HTML
               ``,
               `| | Link |`,
               `|---|---|`,
-              `| 🌐 **App** | [${base}/pr-${pr}/](${base}/pr-${pr}/) |`,
-              `| ⚗ **Tests** | [${base}/pr-${pr}/test.html](${base}/pr-${pr}/test.html) |`,
+              `| 🌐 **App** | [${base}/previews/pr-${pr}/](${base}/previews/pr-${pr}/) |`,
+              `| ⚗ **Tests** | [${base}/previews/pr-${pr}/test.html](${base}/previews/pr-${pr}/test.html) |`,
               ``,
               `**Commit:** \`${sha}\` · **Branch:** \`${context.payload.pull_request.head.ref}\``,
               ``,
-              `> ⏱ GitHub Pages may take 1–2 min to reflect pushes.`,
+              `> ⏱ Takes ~1 min to go live after each push.`,
             ].join('\n');
 
-            const { data: comments } = await github.rest.issues.listComments({ owner, repo, issue_number: pr });
-            const existing = comments.find(c => c.user.type === 'Bot' && c.body.includes('Preview Ready'));
-
+            const { data: comments } = await github.rest.issues.listComments({
+              owner, repo, issue_number: pr,
+            });
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('Preview Ready')
+            );
             if (existing) {
               await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
             } else {
