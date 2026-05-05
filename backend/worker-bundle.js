@@ -27,8 +27,8 @@ function json(data, status = 200, extraHeaders = {}) {
   });
 }
 
-function ok(data = {}, extraHeaders = {}) {
-  return json({ ok: true, ...data }, 200, extraHeaders);
+function ok(data = {}, status = 200, extraHeaders = {}) {
+  return json({ ok: true, ...data }, status, extraHeaders);
 }
 
 function err(message, status = 400, detail = {}) {
@@ -889,17 +889,20 @@ export default {
     const db  = env.DB;
     const ctx = makeCtx(env, db);
 
+    // ── Route handler (wrapped in try/catch so CORS headers always present) ────
+    try {
+
     // ── Auth routes (public) ─────────────────────────────────────────────────
-    if (path === '/api/auth/register'      && method === 'POST') return register(request, ctx);
-    if (path === '/api/auth/login'         && method === 'POST') return login(request, ctx);
-    if (path === '/api/auth/refresh'       && method === 'POST') return refresh(request, ctx);
-    if (path === '/api/auth/verify-email'  && method === 'POST') return verifyEmail(request, ctx);
-    if (path === '/api/auth/forgot-password' && method === 'POST') return forgotPassword(request, ctx);
-    if (path === '/api/auth/reset-password'  && method === 'POST') return resetPassword(request, ctx);
+    if (path === '/api/auth/register'      && method === 'POST') return await register(request, ctx);
+    if (path === '/api/auth/login'         && method === 'POST') return await login(request, ctx);
+    if (path === '/api/auth/refresh'       && method === 'POST') return await refresh(request, ctx);
+    if (path === '/api/auth/verify-email'  && method === 'POST') return await verifyEmail(request, ctx);
+    if (path === '/api/auth/forgot-password' && method === 'POST') return await forgotPassword(request, ctx);
+    if (path === '/api/auth/reset-password'  && method === 'POST') return await resetPassword(request, ctx);
 
     // ── Auth routes (protected) ──────────────────────────────────────────────
-    if (path === '/api/auth/me'     && method === 'GET')  { const e = await mw(requireAuth(env), request, ctx); if (e) return e; return me(request, ctx); }
-    if (path === '/api/auth/logout' && method === 'POST') { const e = await mw(requireAuth(env), request, ctx); if (e) return e; return logout(request, ctx); }
+    if (path === '/api/auth/me'     && method === 'GET')  { const e = await mw(requireAuth(env), request, ctx); if (e) return e; return await me(request, ctx); }
+    if (path === '/api/auth/logout' && method === 'POST') { const e = await mw(requireAuth(env), request, ctx); if (e) return e; return await logout(request, ctx); }
 
     // ── Admin routes (admin only) ─────────────────────────────────────────────
     if (path === '/api/admin/users' && method === 'GET') {
@@ -959,6 +962,23 @@ export default {
     }
 
     return notFound();
+
+    } catch (e) {
+      // Always return CORS headers even on 500 so browser shows the real error
+      console.error('[Worker Error]', e?.message || e);
+      return new Response(
+        JSON.stringify({ ok: false, error: 'Internal server error: ' + (e?.message || 'unknown') }),
+        {
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-Refresh-Token',
+          },
+        }
+      );
+    }
   },
 };
 
