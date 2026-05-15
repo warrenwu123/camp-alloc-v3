@@ -690,8 +690,8 @@ App.Data.API = {
     return this._send('DELETE', `/api/bookings/${encodeURIComponent(id)}`);
   },
 
-  getCheckins(date)  { return this._get(`/api/checkins?date=${date}`); },
-  getCheckouts(date) { return this._get(`/api/checkouts?date=${date}`); },
+  getCheckins(date)  { return this._get(`/api/checkins?date=${date}`).then(r => r?.checkins || r || []); },
+  getCheckouts(date) { return this._get(`/api/checkouts?date=${date}`).then(r => r?.checkouts || r || []); },
 
   importData(payload) { return this._send('POST', '/api/import', payload); },
 };
@@ -720,8 +720,11 @@ App.Data.Store = {
       App.Data.API.getRooms(),
       App.Data.API.getBookings(),
     ]);
-    if (apiRooms  && apiRooms.length)   this.applyRooms(apiRooms);
-    if (apiBookings && apiBookings.length) this.bookings = apiBookings;
+    // Worker returns { rooms: [...] } and { bookings: [...] } — unwrap both
+    const roomsArr    = Array.isArray(apiRooms)    ? apiRooms    : (apiRooms?.rooms    || []);
+    const bookingsArr = Array.isArray(apiBookings) ? apiBookings : (apiBookings?.bookings || []);
+    if (roomsArr.length)    this.applyRooms(roomsArr);
+    if (bookingsArr.length) this.bookings = bookingsArr;
   },
 };
 
